@@ -3,7 +3,7 @@ project(HOWARD11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(HOWARD11 ${SOURCE_FILES} Entry.cpp Debug.hxx)
+add_executable(HOWARD11 ${SOURCE_FILES} Entry.cpp Debug.hxx Node.hxx HowardBase.hxx Node.hxx HowardBase.hxx Common.hxx ScriptNode.hxx Handle.hxx HowardBaseEx.cxx Heroes.hxx HandleManager.hxx Asset.hxx)
 
 target_link_libraries(HOWARD11 glfw3)
 

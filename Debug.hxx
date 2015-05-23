@@ -12,4 +12,6 @@
 
 #include <assert.h>
 
+#define ASSERT_FOUNDATION() assert(0);
+
 #endif // HOWARD11_DEBUG_HXX

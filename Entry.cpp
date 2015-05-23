@@ -15,6 +15,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 
+#include "Node.hxx"
+#include "Handle.hxx"
+
 void error_callback(int error, const char *desc) {
     printf("%s\n", desc); }
 
@@ -24,6 +27,10 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 }
 
 int main() {
+
+    Howard::Node r;
+    Howard::Handle<Howard::Node> h;
+    printf("%s %s\n", h.class_name(), h.handle_type());
 
     assert(glfwInit());
     glfwSetErrorCallback(error_callback);
