@@ -17,11 +17,15 @@
 #include "Handle.hxx"
 #include "Asset.hxx"
 
+#include "HandleManager.hxx"
+#include "SceneManager.hxx"
+
 namespace Howard {
 
 constexpr const char HowardBase::m_class_name[];
 constexpr const char Node::m_class_name[];
-constexpr const char ScriptNode::m_class_name[];
 constexpr const char Asset::m_class_name[];
+
+NodeManager *NodeManager::instance = nullptr;
 
 }

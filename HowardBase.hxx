@@ -26,7 +26,7 @@ namespace Howard {
 
         virtual HowardRTTIType WhatAmI() const { return HowardRTTIType::TBase; }
 
-        const char *class_name() const { return HowardBase::m_class_name; }
+        virtual const char *class_name() const { return HowardBase::m_class_name; }
 
         static constexpr const char m_class_name[] = "HowardName";
 

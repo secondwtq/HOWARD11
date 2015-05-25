@@ -14,6 +14,7 @@
 
 #include "Common.hxx"
 #include "Node.hxx"
+#include "HandleE.hxx"
 
 namespace Howard {
 
@@ -21,11 +22,13 @@ class ScriptNode : public Node {
 
     public:
 
-    HowardRTTIType WhatAmI() const { return HowardRTTIType::TScriptNode; }
+    ScriptNode (RootNode *scene) : Node(scene) { }
+    ScriptNode (HandleObj<Node> scene) : Node(scene) { }
 
-    const char *class_name() const { return ScriptNode::m_class_name; }
+    HowardNodeType node_typeid() const override { return HowardNodeType::NScriptNode; }
+    const char *node_type() const override { return ScriptNode::m_node_type; }
 
-    static constexpr const char m_class_name[] = "ScriptNode";
+    static constexpr const char m_node_type[] = "ScriptNode";
 
 };
 

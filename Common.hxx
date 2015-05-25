@@ -17,13 +17,17 @@ namespace Howard {
 enum HowardRTTIType {
     TBase = 0,
     TNode = 1,
-    TScriptNode = 2,
-    THandle = 3,
-    TAsset = 4,
+    THandle = 2,
+    TAsset = 3,
 };
 
 }
 
 #define HO_INVALIDX -1
+
+#define HAS_FOUNDATION true
+#define NO_FOUNDATION false
+
+#define HO_ENDLINE "\n"
 
 #endif // HOWARD11_COMMON_HXX

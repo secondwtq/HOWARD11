@@ -1,0 +1,11 @@
+
+window {
+    width = 800
+    height = 600
+    title = "HOWARD11 Demo"
+}
+
+rendering {
+    gl_version_major = 3
+    gl_version_minor = 3
+}

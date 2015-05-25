@@ -16,6 +16,8 @@
 #include "HowardBase.hxx"
 #include "Heroes.hxx"
 
+#include "HandleManager.hxx"
+
 #include "Debug.hxx"
 
 #include <utility>
@@ -24,28 +26,33 @@
 
 namespace Howard {
 
-template<typename T>
+template<typename T, typename ContainerT>
 class Handle {
 
     public:
 
     Handle() : m_ref(-1) { }
 
-    Handle(size_t id)  { }
-
-    Handle(const T *object) : Handle(object->RTTIID) { }
+    Handle(int id) : m_ref(id) { }
+    Handle(const T *object) : Handle(object == nullptr ? -1 : object->RTTIID) { }
 
     HowardRTTIType WhatAmI() const { return HowardRTTIType::THandle; }
 
     const char *class_name() const { return "Handle"; }
 
-    static constexpr const char *handle_type() { return T::m_class_name; }
+    static constexpr const char *handle_type() { return T::m_class_name; };
 
     inline int id() const { return this->m_ref; }
 
-    T *get() { return nullptr; }
+    T *get() { return ContainerT::instance->get(m_ref); }
 
-    const T *get() const { return nullptr; }
+    const T *get() const { return ContainerT::instance->get(m_ref); }
+
+//    template <typename ReturnT>
+//    ReturnT *get() { return reinterpret_cast<ReturnT *>(ContainerT::instance->get(m_ref)); }
+//
+//    template <typename ReturnT>
+//    const ReturnT *get() { return reinterpret_cast<ReturnT *>(ContainerT::instance->get(m_ref)); }
 
     Handle& operator = (void *ptr) {
         if (ptr == nullptr) {
@@ -54,7 +61,7 @@ class Handle {
         return *this;
     }
 
-    Handle& operator = (Handle<T> rhs) {
+    Handle& operator = (Handle<T, ContainerT> rhs) {
         swap(this, &rhs);
         return *this;
     }
@@ -94,10 +101,11 @@ class Handle {
 
 };
 
-template <typename T>
-inline bool operator==(const Handle<T>& lhs, const Handle<T>& rhs) {
+template <typename T, typename ContainerT>
+inline bool operator == (const Handle<T, ContainerT>& lhs, const Handle<T, ContainerT>& rhs) {
     return lhs.id() == rhs.id(); }
 
 }
+
 
 #endif // HOWARD11_HANDLE_HXX
