@@ -11,8 +11,11 @@
 #define HOWARD11_COMMON_HXX
 
 #include <stddef.h>
+#include <cstdint>
 
 namespace Howard {
+
+typedef uint8_t RawDataT;
 
 enum HowardRTTIType {
     TBase = 0,
@@ -24,6 +27,7 @@ enum HowardRTTIType {
 }
 
 #define HO_INVALIDX -1
+#define HO_HANDLE_NULL -1
 
 #define HAS_FOUNDATION true
 #define NO_FOUNDATION false

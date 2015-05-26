@@ -27,4 +27,15 @@ Node::~Node () {
         this->get_root()->node_manager->clear_site(this->RTTIID);
 }
 
+RootNode::RootNode() : Node(HAS_FOUNDATION) {
+    // a trick, currently we do not allow multiple RootNodes
+    //  due to the existence of Handle mechanism.
+    this->node_manager = NodeManager::instance = new NodeManager();
+
+    size_t idx = node_manager->allocate_site();
+    assert(idx == 0);
+    this->RTTIID = idx;
+    node_manager->init_site(idx, this);
+}
+
 }

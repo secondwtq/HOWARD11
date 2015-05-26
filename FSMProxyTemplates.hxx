@@ -20,21 +20,26 @@ namespace Howard {
 
 namespace FSM {
 
-template<>
-inline FSMLoggerProxy& operator<<<LoggerEndline>(FSMLoggerProxy& proxy, const LoggerEndline& src) {
-	FSMLoggerProxy& t = proxy.log(HO_ENDLINE);
-	proxy.reset();
-	return t;
-}
+//template<>
+//inline FSMLoggerProxy& operator<<<LoggerEndline>(FSMLoggerProxy& proxy, const LoggerEndline& src) {
+//	FSMLoggerProxy& t = proxy.log(HO_ENDLINE);
+//	proxy.reset();
+//	return t;
+//}
 
-template<>
-inline FSMLoggerProxy& operator<<<std::string>(FSMLoggerProxy& proxy, const std::string& src) {
-	return proxy.log(src.c_str());
-}
+//template<>
+//inline FSMLoggerProxy& operator<<<std::string>(FSMLoggerProxy& proxy, const std::string& src) {
+//	return proxy.log(src.c_str());
+//}
 
 template<>
 inline const std::string& convert_to_string(const unsigned int& src) {
 	return std::move(std::to_string(src));
+}
+
+template<>
+inline const std::string& convert_to_string(const LoggerEndline& src) {
+	return std::move(std::string(HO_ENDLINE));
 }
 
 template<>

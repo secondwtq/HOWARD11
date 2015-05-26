@@ -83,6 +83,7 @@ void StannumCommandTest::execute(StannumRenderer *renderer) {
                           (void *) (StannumCommandTest::m_buf->m_start + 2 * sizeof(glm::vec3) +
                             sizeof(glm::vec2)));
     StannumCommandTest::m_buf->upload();
+    BIND_TEXTUREP(shader, texture_major, m_data->texture->id(), 0);
     glDrawArrays(GL_TRIANGLES, idx-5, 6);
 
     shader->disable_attributes();

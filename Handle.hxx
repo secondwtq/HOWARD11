@@ -22,8 +22,6 @@
 
 #include <utility>
 
-#define HO_HANDLE_NULL -1
-
 namespace Howard {
 
 template<typename T, typename ContainerT>

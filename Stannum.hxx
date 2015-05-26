@@ -18,6 +18,7 @@
 
 #include "GLCommon.hxx"
 #include "StannumShaderCache.hxx"
+#include "StannumTexture.hxx"
 
 #include <stdlib.h>
 
@@ -196,8 +197,23 @@ namespace Stannum {
 struct StannumDataTest {
 
     VertFormatSprite data[6];
+    const Verdandi::Texture *texture;
+
+    void set_texture_and_pos(const Verdandi::Texture *texture, const glm::vec2 pos) {
+        glm::vec2 size = { texture->size };
+        this->set_position_and_size(pos, size);
+        this->texture = texture;
+
+        printf("%f %f %d\n", size.x, size.y, texture->id());
+
+        data[0].texcoord = data[5].texcoord = glm::vec3(0.0, 0.0, 0);
+        data[4].texcoord = glm::vec3(1.0, 0.0, 0);
+        data[2].texcoord = data[3].texcoord = glm::vec3(1.0, 1.0, 0);
+        data[1].texcoord = glm::vec3(0.0, 1.0, 0);
+    }
 
     void set_position_and_size(const glm::vec2& location, const glm::vec2& size) {
+        glm::vec2 size_ = size / (float) 2.0;
         data[0].position = data[5].position = glm::vec3(location.x - size.x, location.y -
                 size.y, 0);
         data[4].position = glm::vec3(location.x + size.x, location.y - size.y, 0);

@@ -140,6 +140,11 @@ inline const std::string& convert_to_string(const T& src) {
 	return unknown;
 }
 
+template<>
+inline const std::string& convert_to_string(const std::string& src) {
+	return src;
+}
+
 template<typename T>
 inline FSMLoggerProxy& operator<<(FSMLoggerProxy& proxy, const T& src) {
 	return proxy.log(convert_to_string(src).c_str());

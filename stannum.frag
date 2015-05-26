@@ -11,6 +11,6 @@ void main() {
 
 	vec4 texcolor = texture(texture_major, frag_texcoord);
 
-	color = vec4(1.0, 1.0, 1.0, 1.0) * frag_multiply;
+	color = texcolor * frag_multiply;
 
 }

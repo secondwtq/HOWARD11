@@ -25,6 +25,8 @@
 
 #include "FSM.hxx"
 
+#include <fstream>
+
 void error_callback(int error, const char *desc) {
     printf("%s\n", desc); }
 
@@ -35,11 +37,13 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 
 Howard::Stannum::StannumRenderer renderer;
 
+Howard::Verdandi::Texture *texture;
+
 void main_loop() {
 
     Howard::Stannum::StannumDataTest data;
-    data.set_position_and_size({ 0, 0 }, { 200, 150 });
-    data.set_color({ 1.0, 0.0, 0.0, 1.0 });
+    data.set_color({ 1.0, 1.0, 1.0, 1.0 });
+    data.set_texture_and_pos(texture, { 0, 32 });
 
     Howard::Stannum::StannumRenderQueue queue;
     queue.push(new Howard::Stannum::StannumCommandTest(&data));
@@ -92,6 +96,22 @@ int main() {
 
     Howard::Verdandi::gl_init();
     renderer.init();
+
+    Howard::Verdandi::TextureImage *textureimage = new Howard::Verdandi::TextureImage("node");
+    {
+        Howard::Verdandi::Image image_t("load");
+        std::ifstream file("node.png", std::ios::binary);
+        file.seekg(0, std::ios::end);
+        std::streamsize size = file.tellg();
+        file.seekg(0, std::ios::beg);
+
+        std::vector<char> buffer(size);
+        if (file.read(buffer.data(), size)) {
+            image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buffer.data()), size);
+        }
+        textureimage->load(image_t);
+    }
+    texture = new Howard::Verdandi::Texture("node_tex", textureimage);
 
     printf("Context Initialized, entering loop (OpenGL %s) ...\n", glGetString(GL_VERSION));
 

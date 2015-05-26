@@ -9,7 +9,7 @@ add_executable(HOWARD11 ${SOURCE_FILES} Debug.hxx Node.hxx HowardBase.hxx Node.h
     StannumTestNode.hxx GLShader.hxx GLShader.cxx GLShaderExt.hxx GLShaderExt.cxx GLShaderExtDef.hxx
     howardgl.hxx StannumTest.hxx GLFoundation.cxx GLCommon.hxx GLFoundation.hxx StannumShaderCache.hxx
     StannumCommon.hxx StannumShaderCache.cxx Stannum.cxx StannumTexture.hxx AtTheVeryBeginning.hxx AtTheVeryBeginning.cxx Acheron.hxx
-    FSM.hxx FSM.cxx FSMCommon.hxx FSMStream.hxx FSMProxyTemplates.hxx FSMLogger.hxx)
+    FSM.hxx FSM.cxx FSMCommon.hxx FSMStream.hxx FSMProxyTemplates.hxx FSMLogger.hxx StannumTexture.cxx Asset.cxx SceneManager.cxx stb.cxx)
 
 target_link_libraries(HOWARD11 glfw3)
 
