@@ -43,7 +43,7 @@ void main_loop() {
 
     Howard::Stannum::StannumDataTest data;
     data.set_color({ 1.0, 1.0, 1.0, 1.0 });
-    data.set_texture_and_pos(texture, { 0, 32 });
+    data.set_texture_and_pos(texture, { 128, 128 });
 
     Howard::Stannum::StannumRenderQueue queue;
     queue.push(new Howard::Stannum::StannumCommandTest(&data));
@@ -100,7 +100,7 @@ int main() {
     Howard::Verdandi::TextureImage *textureimage = new Howard::Verdandi::TextureImage("node");
     {
         Howard::Verdandi::Image image_t("load");
-        std::ifstream file("node.png", std::ios::binary);
+        std::ifstream file("buildingbody.png", std::ios::binary);
         file.seekg(0, std::ios::end);
         std::streamsize size = file.tellg();
         file.seekg(0, std::ios::beg);
@@ -111,7 +111,7 @@ int main() {
         }
         textureimage->load(image_t);
     }
-    texture = new Howard::Verdandi::Texture("node_tex", textureimage);
+    texture = new Howard::Verdandi::Texture("node_tex", textureimage, { 133, 154 }, { 80, 71 });
 
     printf("Context Initialized, entering loop (OpenGL %s) ...\n", glGetString(GL_VERSION));
 

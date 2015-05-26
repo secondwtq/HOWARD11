@@ -118,6 +118,10 @@ class Texture : public Asset {
             pos = { 0, 0 };
         if (size == HO_SIZE_DEFAULT)
             size = parent->size;
+
+        glm::vec2 pos_ = pos, size_ = size, psize = parent->size;
+        pos_start = pos_ / psize;
+        pos_end = (pos_ + size_) / psize;
     }
 
     VGLIDX id() const { return m_parent->id(); }
@@ -127,6 +131,9 @@ class Texture : public Asset {
 
     glm::u16vec2 pos;
     glm::u16vec2 size;
+
+    glm::vec2 pos_start;
+    glm::vec2 pos_end;
 
     private:
 

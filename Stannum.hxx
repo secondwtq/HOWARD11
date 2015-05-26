@@ -204,12 +204,10 @@ struct StannumDataTest {
         this->set_position_and_size(pos, size);
         this->texture = texture;
 
-        printf("%f %f %d\n", size.x, size.y, texture->id());
-
-        data[0].texcoord = data[5].texcoord = glm::vec3(0.0, 0.0, 0);
-        data[4].texcoord = glm::vec3(1.0, 0.0, 0);
-        data[2].texcoord = data[3].texcoord = glm::vec3(1.0, 1.0, 0);
-        data[1].texcoord = glm::vec3(0.0, 1.0, 0);
+        data[0].texcoord = data[5].texcoord = glm::vec3(texture->pos_start, 0);
+        data[4].texcoord = glm::vec3(texture->pos_end.x, texture->pos_start.y, 0);
+        data[2].texcoord = data[3].texcoord = glm::vec3(texture->pos_end, 0);
+        data[1].texcoord = glm::vec3(texture->pos_start.x, texture->pos_end.y, 0);
     }
 
     void set_position_and_size(const glm::vec2& location, const glm::vec2& size) {
