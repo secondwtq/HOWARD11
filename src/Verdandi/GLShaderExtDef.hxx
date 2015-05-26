@@ -9,7 +9,7 @@
 #ifndef MarXsCube_GLShaderExtDef_h
 #define MarXsCube_GLShaderExtDef_h
 
-#include "howardgl.hxx"
+#include "GLCommon.hxx"
 #include <type_traits>
 
 #undef DEF_ATTRIBUTE

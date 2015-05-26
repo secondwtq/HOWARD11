@@ -19,8 +19,8 @@
 
 #include <string>
 
-#include "FSM.hxx"
-#include "FSMHelper.hxx"
+#include "FSM/FSM.hxx"
+#include "FSM/FSMHelper.hxx"
 
 #include "Debug.hxx"
 

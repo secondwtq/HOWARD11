@@ -14,7 +14,6 @@
 
 #include "Common.hxx"
 #include "HowardBase.hxx"
-#include "Heroes.hxx"
 
 #include "HandleManager.hxx"
 

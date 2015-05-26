@@ -13,7 +13,7 @@
 #include <string>
 
 #include "Common.hxx"
-#include "HowardBase.hxx"
+#include "Dwight/HowardBase.hxx"
 
 namespace Howard {
 

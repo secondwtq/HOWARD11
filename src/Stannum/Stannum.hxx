@@ -16,7 +16,7 @@
 
 #include "Debug.hxx"
 
-#include "GLCommon.hxx"
+#include "Verdandi/GLCommon.hxx"
 #include "StannumShaderCache.hxx"
 #include "StannumTexture.hxx"
 

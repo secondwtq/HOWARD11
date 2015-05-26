@@ -16,7 +16,7 @@
 
 #include <iostream>
 
-#include "GLShaderExt.hxx"
+#include "Verdandi/GLShaderExt.hxx"
 
 namespace Howard {
 

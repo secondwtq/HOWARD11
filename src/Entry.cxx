@@ -15,15 +15,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "Node.hxx"
-#include "Handle.hxx"
-#include "RootNode.hxx"
+#include "Dwight/Node.hxx"
+#include "Dwight/Handle.hxx"
+#include "Dwight/RootNode.hxx"
 
-#include "GLFoundation.hxx"
-#include "Stannum.hxx"
+#include "Verdandi/GLFoundation.hxx"
+#include "Stannum/Stannum.hxx"
 #include "AtTheVeryBeginning.hxx"
 
-#include "FSM.hxx"
+#include "FSM/FSM.hxx"
 
 #include <fstream>
 

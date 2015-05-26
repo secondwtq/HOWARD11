@@ -23,9 +23,9 @@
 #include <stb/stb_image.h>
 #include <utility>
 
-#include "FSMHelper.hxx"
+#include "FSM/FSMHelper.hxx"
 #include "Asset.hxx"
-#include "GLCommon.hxx"
+#include "Verdandi/GLCommon.hxx"
 
 #define HO_SIZE_DEFAULT (glm::u16vec2(-1, -1))
 #define HO_UPOS_DEFAULT (glm::u16vec2(-1, -1))

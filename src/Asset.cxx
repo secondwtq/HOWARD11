@@ -11,9 +11,9 @@
 
 #include "Asset.hxx"
 
-#include "FSMHelper.hxx"
+#include "FSM/FSMHelper.hxx"
 
-#include "SceneManager.hxx"
+#include "Dwight/SceneManager.hxx"
 
 namespace Howard {
 

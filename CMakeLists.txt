@@ -3,13 +3,47 @@ project(HOWARD11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
-add_executable(HOWARD11 ${SOURCE_FILES} Debug.hxx Node.hxx HowardBase.hxx Node.hxx HowardBase.hxx
-    Common.hxx ScriptNode.hxx Handle.hxx HowardBaseEx.cxx Heroes.hxx HandleManager.hxx Asset.hxx
-    Node.cxx RootNode.hxx Handle.cxx SceneManager.hxx Entry.cxx HandleE.hxx Stannum.hxx
-    StannumTestNode.hxx GLShader.hxx GLShader.cxx GLShaderExt.hxx GLShaderExt.cxx GLShaderExtDef.hxx
-    howardgl.hxx StannumTest.hxx GLFoundation.cxx GLCommon.hxx GLFoundation.hxx StannumShaderCache.hxx
-    StannumCommon.hxx StannumShaderCache.cxx Stannum.cxx StannumTexture.hxx AtTheVeryBeginning.hxx AtTheVeryBeginning.cxx Acheron.hxx
-    FSM.hxx FSM.cxx FSMCommon.hxx FSMStream.hxx FSMProxyTemplates.hxx FSMLogger.hxx StannumTexture.cxx Asset.cxx SceneManager.cxx stb.cxx)
+include_directories(SYSTEM src)
+
+function(prepend var prefix)
+   set(listVar "")
+   foreach(f ${ARGN})
+      list(APPEND listVar "${prefix}/${f}")
+   endforeach(f)
+   set(${var} "${listVar}" PARENT_SCOPE)
+endfunction(prepend)
+
+set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx FSMCommon.hxx FSMLogger.hxx FSMLogger.hxx)
+
+set(SOURCE_VERDANDI GLCommon.hxx GLFoundation.hxx GLFoundation.cxx
+    GLShader.hxx GLShader.cxx GLShaderExt.hxx GLShaderExt.cxx
+    GLShaderExtDef.hxx)
+
+set(SOURCE_STANNUM StannumCommon.hxx Stannum.hxx Stannum.cxx StannumShaderCache.hxx
+    StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx StannumTest.hxx)
+
+set(SOURCE_DWIGHT HowardBase.hxx HowardBaseEx.cxx Node.hxx Node.cxx Handle.hxx Handle.cxx
+RootNode.hxx HandleE.hxx HandleManager.hxx SceneManager.hxx SceneManager.cxx ScriptNode.hxx
+StannumTestNode.hxx)
+
+set(SOURCE_THIRDPT howardgl.hxx stb.cxx)
+
+prepend(SOURCE_FSM "FSM" ${SOURCE_FSM})
+prepend(SOURCE_VERDANDI Verdandi ${SOURCE_VERDANDI})
+prepend(SOURCE_STANNUM Stannum ${SOURCE_STANNUM})
+prepend(SOURCE_DWIGHT Dwight ${SOURCE_DWIGHT})
+prepend(SOURCE_THIRDPT thirdpt ${SOURCE_THIRDPT})
+
+set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} ${SOURCE_DWIGHT}
+    ${SOURCE_THIRDPT})
+
+set(SOURCE_OTHER src/Debug.hxx
+    src/Common.hxx src/Asset.hxx src/Entry.cxx src/AtTheVeryBeginning.hxx src/AtTheVeryBeginning.cxx
+    src/Acheron.hxx src/Asset.cxx)
+
+prepend(SOURCE_ALL src ${SOURCE_ALL})
+
+add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER})
 
 target_link_libraries(HOWARD11 glfw3)
 

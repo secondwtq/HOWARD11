@@ -11,8 +11,7 @@
 
 #include "StannumTexture.hxx"
 
-#include "howardgl.hxx"
-#include "SceneManager.hxx"
+#include "thirdpt/howardgl.hxx"
 
 namespace Howard {
 

@@ -34,7 +34,7 @@ typedef unsigned int GLuint; // hack, it seems other OS have no gltypes.h
 	typedef type type_vert_obj_##id; \
 	void attribute_attr_##id();
 
-#include "StannumTest.hxx"
+#include "Stannum/StannumTest.hxx"
 
 namespace Howard {
 

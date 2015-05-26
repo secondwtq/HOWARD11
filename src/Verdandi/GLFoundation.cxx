@@ -11,7 +11,6 @@
 
 #include "GLFoundation.hxx"
 
-#include "howardgl.hxx"
 #include "GLCommon.hxx"
 
 #include "AtTheVeryBeginning.hxx"

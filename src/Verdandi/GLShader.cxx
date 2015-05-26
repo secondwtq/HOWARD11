@@ -6,8 +6,7 @@
 //  Copyright (c) 2015 MarXsCube Staff. All rights reserved.
 //
 
-#include "howardgl.hxx"
-
+#include "GLCommon.hxx"
 #include "GLShader.hxx"
 
 #include <cstdlib>
