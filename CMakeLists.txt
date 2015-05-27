@@ -5,12 +5,13 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
 include_directories(SYSTEM src)
 
+# stackoverflow.com/questions/4346412/how-to-prepend-all-filenames-on-the-list-with-common-path
 function(prepend var prefix)
-   set(listVar "")
-   foreach(f ${ARGN})
-      list(APPEND listVar "${prefix}/${f}")
-   endforeach(f)
-   set(${var} "${listVar}" PARENT_SCOPE)
+    set(listVar "")
+    foreach(f ${ARGN})
+        list(APPEND listVar "${prefix}/${f}")
+    endforeach(f)
+    set(${var} "${listVar}" PARENT_SCOPE)
 endfunction(prepend)
 
 set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx FSMCommon.hxx FSMLogger.hxx FSMLogger.hxx)
@@ -38,14 +39,15 @@ set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} 
     ${SOURCE_THIRDPT})
 
 set(SOURCE_OTHER src/Debug.hxx
-    src/Common.hxx src/Asset.hxx src/Entry.cxx src/AtTheVeryBeginning.hxx src/AtTheVeryBeginning.cxx
+    src/Common.hxx src/Asset.hxx src/Entry.cxx src/Misc/AtTheVeryBeginning.hxx src/Misc/AtTheVeryBeginning.cxx
     src/Acheron.hxx src/Asset.cxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
-add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER})
+add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/Transform.hxx src/Misc/Transform.cxx)
 
-target_link_libraries(HOWARD11 glfw3)
+set(HOWARD_LIBS ${HOWARD_LIBS} glfw3)
+set(HOWARD_LIBS ${HOWARD_LIBS} confuse)
 
 if(APPLE)
 
@@ -57,7 +59,8 @@ if(APPLE)
     set(EXTRA_LIBS_APPLE ${FRAMEWORK_COCOA} ${FRAMEWORK_GL} ${FRAMEWORK_IOKIT}
         ${FRAMEWORK_CORE_VIDEO})
 
+    set(HOWARD_LIBS ${HOWARD_LIBS} ${EXTRA_LIBS_APPLE})
+
 endif(APPLE)
 
-target_link_libraries(HOWARD11 ${EXTRA_LIBS_APPLE})
-target_link_libraries(HOWARD11 confuse)
+target_link_libraries(HOWARD11 ${HOWARD_LIBS})

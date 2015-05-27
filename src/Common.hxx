@@ -34,4 +34,9 @@ enum HowardRTTIType {
 
 #define HO_ENDLINE "\n"
 
+#include <glm/glm.hpp>
+
+using HCoord = glm::i32vec3;
+using HPoint = glm::i16vec2;
+
 #endif // HOWARD11_COMMON_HXX

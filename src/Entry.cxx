@@ -21,7 +21,8 @@
 
 #include "Verdandi/GLFoundation.hxx"
 #include "Stannum/Stannum.hxx"
-#include "AtTheVeryBeginning.hxx"
+#include "Misc/AtTheVeryBeginning.hxx"
+#include "Misc/Transform.hxx"
 
 #include "FSM/FSM.hxx"
 
@@ -43,7 +44,9 @@ void main_loop() {
 
     Howard::Stannum::StannumDataTest data;
     data.set_color({ 1.0, 1.0, 1.0, 1.0 });
-    data.set_texture_and_pos(texture, { 128, 128 });
+    Howard::Transform::Camera::instance->update();
+    data.set_texture_and_pos(texture, Howard::Transform::view_pos({ 256, 0, 0 },
+                             Howard::Transform::Camera::instance));
 
     Howard::Stannum::StannumRenderQueue queue;
     queue.push(new Howard::Stannum::StannumCommandTest(&data));
@@ -100,7 +103,7 @@ int main() {
     Howard::Verdandi::TextureImage *textureimage = new Howard::Verdandi::TextureImage("node");
     {
         Howard::Verdandi::Image image_t("load");
-        std::ifstream file("buildingbody.png", std::ios::binary);
+        std::ifstream file("assets/buildingbody.png", std::ios::binary);
         file.seekg(0, std::ios::end);
         std::streamsize size = file.tellg();
         file.seekg(0, std::ios::beg);
