@@ -10,13 +10,13 @@
 #include "Node.hxx"
 #include "RootNode.hxx"
 #include "ScriptNode.hxx"
-#include "StannumTestNode.hxx"
+#include "StannumSpriteNode.hxx"
 
 namespace Howard {
 
 constexpr const char Node::m_node_type[];
 constexpr const char RootNode::m_node_type[];
-constexpr const char StannumTestNode::m_node_type[];
+constexpr const char StannumSpriteNode::m_node_type[];
 constexpr const char ScriptNode::m_node_type[];
 
 Node::Node(class RootNode *scene) : RTTIID(scene->node_manager->allocate_site()) {

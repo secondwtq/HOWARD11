@@ -37,6 +37,8 @@ class gl_shader {
 
 	void use();
 
+    void destroy();
+
 	virtual ~gl_shader() { }
 
 	private:

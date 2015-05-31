@@ -69,19 +69,25 @@ void gl_shader::create() {
 	glAttachShader(this->obj_id, this->vert_id);
 	glAttachShader(this->obj_id, this->frag_id);
 	glLinkProgram(this->obj_id);
+
+	glDeleteShader(this->vert_id);
+	glDeleteShader(this->frag_id);
 }
 
 void gl_shader::use() {
-	glUseProgram(this->obj_id);
+	glUseProgram(this->obj_id); }
+
+void gl_shader::destroy() {
+	glUseProgram(0);
+	glDeleteProgram(this->obj_id);
+	this->obj_id = this->vert_id = this->frag_id = -1;
 }
 
 int gl_shader::attribute(const char *name) {
-	return glGetAttribLocation(this->obj_id, name);
-}
+	return glGetAttribLocation(this->obj_id, name); }
 
 int gl_shader::uniform(const char *name) {
-	return glGetUniformLocation(this->obj_id, name);
-}
+	return glGetUniformLocation(this->obj_id, name); }
 
 }
 

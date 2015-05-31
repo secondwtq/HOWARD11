@@ -17,15 +17,15 @@ endfunction(prepend)
 set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx FSMCommon.hxx FSMLogger.hxx FSMLogger.hxx)
 
 set(SOURCE_VERDANDI GLCommon.hxx GLFoundation.hxx GLFoundation.cxx
-    GLShader.hxx GLShader.cxx GLShaderExt.hxx GLShaderExt.cxx
+    GLShader.hxx GLShader.cxx GLShaderExt.hxx
     GLShaderExtDef.hxx)
 
 set(SOURCE_STANNUM StannumCommon.hxx Stannum.hxx Stannum.cxx StannumShaderCache.hxx
-    StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx StannumTest.hxx)
+    StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx)
 
 set(SOURCE_DWIGHT HowardBase.hxx HowardBaseEx.cxx Node.hxx Node.cxx Handle.hxx Handle.cxx
 RootNode.hxx HandleE.hxx HandleManager.hxx SceneManager.hxx SceneManager.cxx ScriptNode.hxx
-StannumTestNode.hxx)
+StannumSpriteNode.hxx)
 
 set(SOURCE_THIRDPT howardgl.hxx stb.cxx)
 
@@ -44,7 +44,7 @@ set(SOURCE_OTHER src/Debug.hxx
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
-add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/Transform.hxx src/Misc/Transform.cxx)
+add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/Transform.hxx src/Misc/Transform.cxx src/Stannum/StannumSprite.hxx src/Dwight/Event.hxx src/Dwight/ScriptEvent.hxx)
 
 set(HOWARD_LIBS ${HOWARD_LIBS} glfw3)
 set(HOWARD_LIBS ${HOWARD_LIBS} confuse)

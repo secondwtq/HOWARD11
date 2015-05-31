@@ -18,9 +18,11 @@
 #include "Dwight/Node.hxx"
 #include "Dwight/Handle.hxx"
 #include "Dwight/RootNode.hxx"
+#include "Dwight/StannumSpriteNode.hxx"
 
 #include "Verdandi/GLFoundation.hxx"
 #include "Stannum/Stannum.hxx"
+#include "Stannum/StannumSprite.hxx"
 #include "Misc/AtTheVeryBeginning.hxx"
 #include "Misc/Transform.hxx"
 
@@ -37,19 +39,12 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
 }
 
 Howard::Stannum::StannumRenderer renderer;
-
 Howard::Verdandi::Texture *texture;
+Howard::RootNode *root;
 
 void main_loop() {
-
-    Howard::Stannum::StannumDataTest data;
-    data.set_color({ 1.0, 1.0, 1.0, 1.0 });
-    Howard::Transform::Camera::instance->update();
-    data.set_texture_and_pos(texture, Howard::Transform::view_pos({ 256, 0, 0 },
-                             Howard::Transform::Camera::instance));
-
-    Howard::Stannum::StannumRenderQueue queue;
-    queue.push(new Howard::Stannum::StannumCommandTest(&data));
+    Howard::Stannum::RenderQueue queue;
+    root->on_paint_(&queue);
 
     renderer.render_dispatch(queue);
 }
@@ -68,9 +63,9 @@ int main() {
 
     Howard::AtTheVeryBeginning::SettingGlobal::instance()->load("config.rc");
 
-    Howard::RootNode root;
-    Howard::Node r(&root);
-    r.attach_to({ &root });
+    root = new Howard::RootNode();
+    Howard::Node r(root);
+    r.attach_to({ root });
 
     assert(glfwInit());
     glfwSetErrorCallback(error_callback);
@@ -116,6 +111,10 @@ int main() {
     }
     texture = new Howard::Verdandi::Texture("node_tex", textureimage, { 133, 154 }, { 80, 71 });
 
+    Howard::StannumSpriteNode *sprite = new Howard::StannumSpriteNode(root, texture);
+    sprite->set_position({ 256, 0, 0 });
+    sprite->attach_to({ &r });
+
     printf("Context Initialized, entering loop (OpenGL %s) ...\n", glGetString(GL_VERSION));
 
     while (!glfwWindowShouldClose(window)) {
@@ -130,6 +129,8 @@ int main() {
         glfwPollEvents();
     }
 
+    renderer.destroy();
     glfwDestroyWindow(window);
     glfwTerminate();
+    Howard::FSM::dispose();
 }

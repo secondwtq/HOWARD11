@@ -34,10 +34,7 @@ typedef unsigned int GLuint; // hack, it seems other OS have no gltypes.h
 	typedef type type_vert_obj_##id; \
 	void attribute_attr_##id();
 
-#include "Stannum/StannumTest.hxx"
-
 namespace Howard {
-
 namespace Verdandi {
 
 class gl_shader_ext : public gl_shader {
@@ -51,27 +48,7 @@ class gl_shader_ext : public gl_shader {
 
 };
 
-class SpriteShader : public gl_shader_ext {
-	public:
-
-	ATTR_OBJECT(A, Stannum::VertFormatSprite);
-
-	void init_shader();
-	void attribute_attr(size_t sid);
-	void disable_attributes();
-
-	DEF_ATTRIBUTE(position);
-	DEF_ATTRIBUTE(texcoord);
-	DEF_ATTRIBUTE(location);
-	DEF_ATTRIBUTE(multiply);
-
-	DEF_UNIFORM(mvp);
-	DEF_SAMPLER(texture_major);
-
-};
-
 }
-
 }
 
 #define SET_UNIFORMB(shader, name, value) (glUniform1i((shader).NAME_UNIFORM(name), static_cast<bool>(value)))

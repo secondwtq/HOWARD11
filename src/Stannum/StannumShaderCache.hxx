@@ -26,20 +26,9 @@ class ShaderCache {
 
     public:
 
-    void load_shaders() {
+    void load_shaders();
 
-        Verdandi::SpriteShader *sh_test = new Verdandi::SpriteShader();
-        sh_test->load_file(Verdandi::SHADERTYPE::VERTEX, "stannum.vert");
-        sh_test->load_file(Verdandi::SHADERTYPE::FRAG, "stannum.frag");
-        sh_test->create();
-        sh_test->init_shader();
-
-        std::cout << sh_test->log(Verdandi::SHADERTYPE::VERTEX);
-        std::cout << sh_test->log(Verdandi::SHADERTYPE::FRAG);
-
-        m_shaders[ShaderType::CommonSprite] = sh_test;
-
-    }
+    void destroy_shaders();
 
     template <typename T>
     T *get_shader(ShaderType type) {

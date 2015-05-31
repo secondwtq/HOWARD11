@@ -15,6 +15,7 @@
 #include "Common.hxx"
 #include "HowardBase.hxx"
 #include "Handle.hxx"
+#include "Event.hxx"
 
 #include "Debug.hxx"
 
@@ -31,13 +32,17 @@ enum HowardNodeType {
     NFoundation = 0,
     NRootNode = 1,
     NScriptNode = 2,
-    NStannumTestNode = 3,
+    NStannumSpriteNode = 3,
 
 };
 
 class RootNode;
 
-class StannumRenderQueue;
+namespace Stannum {
+
+class RenderQueue;
+
+}
 
 class Node : public HowardBase {
 
@@ -79,7 +84,19 @@ class Node : public HowardBase {
     // ATTENTION: this function is to be called
     //  in the Stannum thread and thus not to be overloaded
     //  by ScriptNode, it's used by Stannum nodes only.
-    virtual void on_paint(StannumRenderQueue *queue) { }
+    virtual void on_paint(Stannum::RenderQueue *queue) { }
+
+    virtual void on_update() { }
+
+    virtual bool on_event(const Event& event) { return true; }
+
+    void invoke_event(const Event& event) {
+        bool t = this->on_event(event);
+        if (t) {
+            for (auto ch : m_children) {
+                ch->invoke_event(event); }
+        }
+    }
 
     void set_parent(HandleObj<Node> parent) {
         assert(!this->get_parent());
@@ -145,6 +162,18 @@ class Node : public HowardBase {
             return reinterpret_cast<RootNode *>(this); }
     }
 
+    void on_paint_(Stannum::RenderQueue *queue) {
+        for (auto ch : m_children) {
+            ch->on_paint_(queue); }
+        this->on_paint(queue);
+    }
+
+    void on_update_() {
+        this->on_update();
+        for (auto ch : m_children) {
+            ch->on_update_(); }
+    }
+
     protected:
 
         // for RootNode
@@ -166,12 +195,6 @@ class Node : public HowardBase {
         for (auto ch : m_children) {
             ch->on_exit_(); }
         this->on_exit();
-    }
-
-    void on_paint_(StannumRenderQueue *queue) {
-        for (auto ch : m_children) {
-            ch->on_paint_(queue); }
-        this->on_paint(queue);
     }
 
 };

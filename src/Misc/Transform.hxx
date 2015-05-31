@@ -21,9 +21,25 @@ namespace Howard {
 namespace Transform {
 
 class Camera {
+
     public:
 
-        void update();
+    virtual void update() = 0;
+
+    glm::mat4 view_mat;
+    float scale_factor = 1.0f;
+
+};
+
+class IsometricCamera : public Camera {
+    public:
+
+        IsometricCamera() {
+            this->scale_factor = 0.6484375f;
+            this->update();
+        }
+
+        void update() override;
 
         void set_pos(float x, float y, float z) {
             pos = { x, y, z }; }
@@ -37,11 +53,8 @@ class Camera {
         glm::vec3 pos { 384, 384, 320 };
         glm::vec3 look_at { 0, 0, 0 };
         glm::vec3 vec_up { 0, 0, 1 };
-        glm::mat4 view_mat;
 
-        float scale_factor = 0.6484375f;
-
-        static Camera *instance;
+        static IsometricCamera *instance;
 };
 
 HPoint view_pos(const HCoord& coord, const Camera *camera);

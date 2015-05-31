@@ -23,7 +23,6 @@
 #include <stdlib.h>
 
 namespace Howard {
-
 namespace Stannum {
 
 class MappedVertexBufferBase {
@@ -142,11 +141,7 @@ class StannumCommand {
 
 };
 
-class StannumCommandSprite : public StannumCommand {
-
-};
-
-class StannumRenderQueue {
+class RenderQueue {
 
     public:
 
@@ -168,7 +163,9 @@ class StannumRenderer {
 
     void init();
 
-    void render_dispatch(StannumRenderQueue& queue) {
+    void destroy();
+
+    void render_dispatch(RenderQueue& queue) {
         for (auto cmd : queue.commands) {
             cmd->execute(this); }
         queue.clear();
@@ -186,70 +183,6 @@ class StannumRenderer {
 
 }
 
-}
-
-#include "StannumTest.hxx"
-
-namespace Howard {
-
-namespace Stannum {
-
-struct StannumDataTest {
-
-    VertFormatSprite data[6];
-    const Verdandi::Texture *texture;
-
-    void set_texture_and_pos(const Verdandi::Texture *texture, const glm::vec2 pos) {
-        glm::vec2 size = { texture->size };
-        this->set_position_and_size(pos, size);
-        this->texture = texture;
-
-        data[0].texcoord = data[5].texcoord = glm::vec3(texture->pos_start, 0);
-        data[4].texcoord = glm::vec3(texture->pos_end.x, texture->pos_start.y, 0);
-        data[2].texcoord = data[3].texcoord = glm::vec3(texture->pos_end, 0);
-        data[1].texcoord = glm::vec3(texture->pos_start.x, texture->pos_end.y, 0);
-    }
-
-    void set_position_and_size(const glm::vec2& location, const glm::vec2& size) {
-        glm::vec2 size_ = size / (float) 2.0;
-        data[0].position = data[5].position = glm::vec3(location.x - size.x, location.y -
-                size.y, 0);
-        data[4].position = glm::vec3(location.x + size.x, location.y - size.y, 0);
-        data[2].position = data[3].position = glm::vec3(location.x + size.x, location.y +
-                size.y, 0);
-        data[1].position = glm::vec3(location.x - size.x, location.y + size.y, 0);
-    }
-
-    void set_color(const glm::vec4& color) {
-        for (size_t i = 0; i < 6; i++) {
-            data[i].multiply = color; }
-    }
-
-};
-
-class StannumCommandTest : public StannumCommand {
-
-    friend class StannumRenderer;
-
-    public:
-
-    StannumCommandTest(StannumDataTest *data) : m_data(data) { }
-
-    virtual CommandType cmd_type() { return CommandType::CTest; }
-
-    virtual void execute(StannumRenderer *renderer) override;
-
-    private:
-
-    StannumDataTest *m_data = nullptr;
-
-    public:
-    static MappedVertexBuffer<VertFormatSprite> *m_buf;
-
-};
-
-
-}
 
 }
 
