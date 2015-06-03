@@ -11,6 +11,8 @@
 
 #include "Transform.hxx"
 
+#include <stdio.h>
+
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -23,7 +25,7 @@ namespace Transform {
 IsometricCamera *IsometricCamera::instance = new IsometricCamera;
 
 void IsometricCamera::update() {
-    this->view_mat = glm::lookAt(this->pos, -this->look_at, this->vec_up); }
+    this->view_mat = glm::lookAt(this->pos, this->look_at, this->vec_up); }
 
 HPoint view_pos(const glm::i32vec3& coord, const Camera *camera) {
     glm::vec4 ret { -coord, 1 };

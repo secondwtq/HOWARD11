@@ -43,6 +43,11 @@ void gl_init() {
 
 }
 
+void clear_depth() {
+    glClear(GL_DEPTH_BUFFER_BIT);
+    return glClearDepth(1.0f);
+}
+
 }
 
 }

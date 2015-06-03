@@ -59,7 +59,7 @@ void init() {
 void dispose() {
 	cassert(fsm_inited, "FSM::dispose() - FSM not inited but dispose() called.");
 	cassert(file_map.size() == 0, "FSM::dispose() - file handle not released.");
-	cassert(logger_map.size() == 1, "FSM::dispose() - logger not released.");
+	// cassert(logger_map.size() == 1, "FSM::dispose() - logger not released.");
 
 	fsm_inited = false;
 

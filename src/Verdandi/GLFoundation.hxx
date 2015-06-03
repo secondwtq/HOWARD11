@@ -18,6 +18,8 @@ namespace Verdandi {
 
 void gl_init();
 
+void clear_depth();
+
 }
 
 }

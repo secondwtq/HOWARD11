@@ -17,6 +17,7 @@
 #include "Debug.hxx"
 
 #include "Verdandi/GLCommon.hxx"
+#include "Verdandi/GLFoundation.hxx"
 #include "StannumShaderCache.hxx"
 #include "StannumTexture.hxx"
 
@@ -166,6 +167,8 @@ class StannumRenderer {
     void destroy();
 
     void render_dispatch(RenderQueue& queue) {
+        Verdandi::clear_depth();
+        glClear(GL_COLOR_BUFFER_BIT);
         for (auto cmd : queue.commands) {
             cmd->execute(this); }
         queue.clear();

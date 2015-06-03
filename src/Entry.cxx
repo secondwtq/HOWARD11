@@ -9,6 +9,7 @@
 
 #define GLFW_INCLUDE_GLCOREARB
 #include <GLFW/glfw3.h>
+#include <glm/glm.hpp>
 
 #include "Debug.hxx"
 
@@ -34,8 +35,26 @@ void error_callback(int error, const char *desc) {
     printf("%s\n", desc); }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
-        glfwSetWindowShouldClose(window, GL_TRUE);
+    if (action == GLFW_PRESS) {
+        if (key == GLFW_KEY_ESCAPE)
+            glfwSetWindowShouldClose(window, GL_TRUE);
+        if (key == GLFW_KEY_UP) {
+            glm::vec3 offset = { 1, 1, 0 };
+            offset *= 32;
+            Howard::Transform::IsometricCamera::instance->look_at += offset;
+            Howard::Transform::IsometricCamera::instance->pos += offset;
+        }
+    }
+}
+
+void glfw_mousecb(GLFWwindow *window, int button, int action, int mods) {
+    if (action == GLFW_PRESS) {
+
+    }
+}
+
+void glfw_cursorcb(GLFWwindow *window, double x, double y) {
+
 }
 
 Howard::Stannum::StannumRenderer renderer;
@@ -43,6 +62,9 @@ Howard::Verdandi::Texture *texture;
 Howard::RootNode *root;
 
 void main_loop() {
+
+    Howard::Transform::IsometricCamera::instance->update();
+
     Howard::Stannum::RenderQueue queue;
     root->on_paint_(&queue);
 
@@ -89,8 +111,10 @@ int main() {
     }
 
     glfwSetKeyCallback(window, key_callback);
+    glfwSetCursorPosCallback(window, glfw_cursorcb);
     glfwSetFramebufferSizeCallback(window, glfw_fbsizecb);
     glfwMakeContextCurrent(window);
+//    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     Howard::Verdandi::gl_init();
     renderer.init();
@@ -118,7 +142,6 @@ int main() {
     printf("Context Initialized, entering loop (OpenGL %s) ...\n", glGetString(GL_VERSION));
 
     while (!glfwWindowShouldClose(window)) {
-
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
         float ratio = width / (float) height;
