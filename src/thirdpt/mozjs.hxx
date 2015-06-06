@@ -1,7 +1,7 @@
 //
 // Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
 //
-// Date: 2015-05-24
+// Date: 2015-06-06
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
 // This file is part of the HOWARD11 Game Engine.
@@ -9,10 +9,12 @@
 // WE ARE STANDING ON THE EDGE.
 //
 
-#ifndef HOWARD11_HOWARDGL_HXX
-#define HOWARD11_HOWARDGL_HXX
+#ifndef HOWARD11_MOZJS_HXX
+#define HOWARD11_MOZJS_HXX
 
-#define GLFW_INCLUDE_GLCOREARB
-#include <GLFW/glfw3.h>
+#include <jsapi.h>
 
-#endif // HOWARD11_HOWARDGL_HXX
+#include <xoundation/spde.hpp>
+#include <xoundation/spde_helper.hxx>
+
+#endif // HOWARD11_MOZJS_HXX

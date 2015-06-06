@@ -24,6 +24,8 @@
 
 #include "Debug.hxx"
 
+#define AC(x) const_cast<char *>((x))
+
 namespace Howard {
 
 namespace AtTheVeryBeginning {
@@ -47,16 +49,16 @@ struct Setting<WindowSetting> {
 
     static constexpr const char section_name[] = "window";
     static constexpr cfg_opt_t section_opts[] = {
-        CFG_INT("width", 800, CFGF_NONE),
-        CFG_INT("height", 600, CFGF_NONE),
-        CFG_STR("title", "Howard 11 Demo", CFGF_NONE),
+        CFG_INT(AC("width"), 800, CFGF_NONE),
+        CFG_INT(AC("height"), 600, CFGF_NONE),
+        CFG_STR(AC("title"), AC("Howard 11 Demo"), CFGF_NONE),
         CFG_END()
     };
 
     static void fetch(cfg_t *cfg) {
         cfg_t *section = cfg_getsec(cfg, section_name);
-        instance()->width = instance()->actual_width = cfg_getint(section, "width");
-        instance()->height = instance()->actual_height = cfg_getint(section, "height");
+        instance()->width = instance()->actual_width = cfg_getint(section, AC("width"));
+        instance()->height = instance()->actual_height = cfg_getint(section, AC("height"));
         instance()->title = cfg_getstr(section, "title");
     }
 
@@ -76,15 +78,15 @@ struct Setting<SRendering> {
 
     static constexpr const char section_name[] = "rendering";
     static constexpr cfg_opt_t section_opts[] = {
-        CFG_INT("gl_version_major", 4, CFGF_NONE),
-        CFG_INT("gl_version_minor", 1, CFGF_NONE),
+        CFG_INT(AC("gl_version_major"), 4, CFGF_NONE),
+        CFG_INT(AC("gl_version_minor"), 1, CFGF_NONE),
         CFG_END()
     };
 
     static void fetch(cfg_t *cfg) {
         cfg_t *section = cfg_getsec(cfg, section_name);
-        instance()->glv_major = cfg_getint(section, "gl_version_major");
-        instance()->glv_minor = cfg_getint(section, "gl_version_minor");
+        instance()->glv_major = cfg_getint(section, AC("gl_version_major"));
+        instance()->glv_minor = cfg_getint(section, AC("gl_version_minor"));
     }
 
     char glv_major, glv_minor;
@@ -97,10 +99,10 @@ struct Setting<SRendering> {
 class SettingGlobal {
 
     static constexpr cfg_opt_t opts[] = {
-        CFG_SEC(Setting<WindowSetting>::section_name,
+        CFG_SEC(AC(Setting<WindowSetting>::section_name),
                 const_cast<cfg_opt_t *>(Setting<WindowSetting>::section_opts),
                 CFGF_NONE),
-        CFG_SEC(Setting<SRendering>::section_name,
+        CFG_SEC(AC(Setting<SRendering>::section_name),
                 const_cast<cfg_opt_t *>(Setting<SRendering>::section_opts),
                 CFGF_NONE),
         CFG_END()

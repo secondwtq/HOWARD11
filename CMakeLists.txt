@@ -44,7 +44,7 @@ set(SOURCE_OTHER src/Debug.hxx
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
-add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/Transform.hxx src/Misc/Transform.cxx src/Stannum/StannumSprite.hxx src/Dwight/Event.hxx src/Dwight/ScriptEvent.hxx)
+add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/Transform.hxx src/Misc/Transform.cxx src/Stannum/StannumSprite.hxx src/Dwight/Event.hxx src/Dwight/ScriptEvent.hxx src/thirdpt/mozjs.hxx src/thirdpt/mozjs.hxx src/Misc/hassert.hxx)
 
 set(HOWARD_LIBS ${HOWARD_LIBS} glfw3)
 set(HOWARD_LIBS ${HOWARD_LIBS} confuse)
