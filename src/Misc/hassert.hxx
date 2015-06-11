@@ -12,15 +12,22 @@
 #ifndef HOWARD11_HASSERT_HXX
 #define HOWARD11_HASSERT_HXX
 
+#define HOWARD_DEBUG
+
 #include <stdio.h>
 #include <stdlib.h>
 
-inline void hassert_internal(const char *file, int line, const char *exp, const char *msg) {
+inline bool hassert_internal(const char *file, int line, const char *exp, const char *msg) {
+    static const char *default_msg = "No extra information provided.";
+
     char buf[1024];
-    sprintf(buf, "");
+    if (msg == NULL) {
+        msg = default_msg; }
+    sprintf(buf, "[FATAL] ASSERTION FAILED - %s:%d: %s - %s\n", file, line, exp, msg);
     printf("%s\n", buf);
 
     abort();
+    return true; // we should never reach here
 }
 
 #if (!defined(HOWARD_DEBUG))
@@ -28,14 +35,15 @@ inline void hassert_internal(const char *file, int line, const char *exp, const 
 #define ASSERT(e) ((void) 0)
 #define ASSERT_FOUNDATION ((void) 0)
 
-#define ASSERT_MSG()
+#define ASSERT_MSG(e, msg) ((void) 0)
 
 #else
 
-#define ASSERT(e)
-#define ASSERT_FOUNDATION(e)
+#define ASSERT(e) ((void) ((!!(e)) || hassert_internal(__FILE__, __LINE__, #e, NULL)))
+#define ASSERT_FOUNDATION_MSG(msg) ((void) (hassert_internal(__FILE__, __LINE__, (""), (msg))))
+#define ASSERT_FOUNDATION() ((void) (ASSERT_FOUNDATION_MSG(NULL)))
 
-#define ASSERT_MSG()
+#define ASSERT_MSG(e, msg) ((void) ((!!(e)) || hassert_internal(__FILE__, __LINE__, #e, (msg))))
 
 #endif
 

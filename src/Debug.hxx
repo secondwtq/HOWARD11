@@ -10,8 +10,6 @@
 #ifndef HOWARD11_DEBUG_HXX
 #define HOWARD11_DEBUG_HXX
 
-#include <assert.h>
-
-#define ASSERT_FOUNDATION() assert(0);
+#include "Misc/hassert.hxx"
 
 #endif // HOWARD11_DEBUG_HXX

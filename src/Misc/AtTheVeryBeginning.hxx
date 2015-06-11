@@ -56,6 +56,8 @@ struct Setting<WindowSetting> {
     };
 
     static void fetch(cfg_t *cfg) {
+        ASSERT(cfg);
+
         cfg_t *section = cfg_getsec(cfg, section_name);
         instance()->width = instance()->actual_width = cfg_getint(section, AC("width"));
         instance()->height = instance()->actual_height = cfg_getint(section, AC("height"));
@@ -123,7 +125,7 @@ class SettingGlobal {
             case CFG_PARSE_ERROR:
                 printf("warning: configuration file '%s' error: %s\n"
                                "exiting...\n\n", filename, strerror(errno));
-                ASSERT_FOUNDATION();
+                ASSERT_FOUNDATION_MSG("RTFM!");
         }
 
         Setting<WindowSetting>::fetch(cfg);
