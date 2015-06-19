@@ -60,7 +60,7 @@ struct DataSprite {
         set_color({ 1.0, 1.0, 1.0, 1.0 }); }
 
     void set_texture_and_pos(const Verdandi::Texture *texture, const glm::vec2& pos) {
-        assert(this->texture != nullptr);
+        assert(texture != nullptr); // 150623: NO `this`! We just wanna check the arg, fixed.
         glm::vec2 size = { texture->size };
         this->set_position_and_size(pos, size);
         this->texture = texture;
@@ -89,8 +89,7 @@ struct DataSprite {
 
     void set_color(const glm::vec4& color) {
         for (size_t i = 0; i < 6; i++) {
-            data[i].multiply = color;
-        }
+            data[i].multiply = color; }
     }
 
 };

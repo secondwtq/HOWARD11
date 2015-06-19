@@ -39,10 +39,7 @@ enum HowardNodeType {
 class RootNode;
 
 namespace Stannum {
-
-class RenderQueue;
-
-}
+    class RenderQueue; }
 
 class Node : public HowardBase {
 
@@ -157,7 +154,9 @@ class Node : public HowardBase {
             if (this->has_parent()) {
                 return this->get_parent()->get_root();
             } else {
-                ASSERT_FOUNDATION(); }
+                ASSERT_FOUNDATION();
+                return nullptr;
+            }
         } else {
             return reinterpret_cast<RootNode *>(this); }
     }

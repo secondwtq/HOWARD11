@@ -34,23 +34,19 @@ namespace FSM {
 
 template<>
 inline const std::string& convert_to_string(const unsigned int& src) {
-	return std::move(std::to_string(src));
-}
+	return std::move(std::to_string(src)); }
 
 template<>
 inline const std::string& convert_to_string(const LoggerEndline& src) {
-	return std::move(std::string(HO_ENDLINE));
-}
+	return std::move(std::string(HO_ENDLINE)); }
 
 template<>
 inline const std::string& convert_to_string(const std::size_t& src) {
-	return std::move(std::to_string(src));
-}
+	return std::move(std::to_string(src));  }
 
 template<>
 inline const std::string& convert_to_string(const int& src) {
-	return std::move(std::to_string(src));
-}
+	return std::move(std::to_string(src)); }
 
 }
 

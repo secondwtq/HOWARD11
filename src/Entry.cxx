@@ -28,8 +28,11 @@
 #include "Misc/Transform.hxx"
 
 #include "FSM/FSM.hxx"
+#include "FSM/FSMHelper.hxx"
 
 #include <fstream>
+
+using namespace Howard::FSMHelper;
 
 void error_callback(int error, const char *desc) {
     printf("%s\n", desc); }
@@ -139,7 +142,7 @@ int main() {
     sprite->set_position({ 256, 0, 0 });
     sprite->attach_to({ &r });
 
-    printf("Context Initialized, entering loop (OpenGL %s) ...\n", glGetString(GL_VERSION));
+    log("GLManager", L::Message) << "Context Initialized, entering loop (OpenGL " << glGetString(GL_VERSION) << ") ..." << rn;
 
     while (!glfwWindowShouldClose(window)) {
         int width, height;
