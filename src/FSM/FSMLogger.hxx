@@ -150,6 +150,7 @@ inline FSMLoggerProxy& operator<<(FSMLoggerProxy& proxy, const T& src) {
 	return proxy.log(convert_to_string(src).c_str());
 }
 
+// 150202: fix behavior of char array (pre-defined).
 inline FSMLoggerProxy& operator<<(FSMLoggerProxy& proxy, char *src) {
 	return proxy.log(src); }
 
@@ -158,10 +159,6 @@ inline FSMLoggerProxy& operator<<(FSMLoggerProxy& proxy, const char *src) {
 
 inline FSMLoggerProxy& operator<<(FSMLoggerProxy& proxy, const unsigned char *src) {
 	return proxy.log(reinterpret_cast<const char *>(src)); }
-
-// 150202: fix behavior on char array (pre-defined).
-//inline FSMLoggerProxy& operator<<(FSMLoggerProxy& proxy, char src[]) {
-//	return proxy.log(src); }
 
 void init();
 

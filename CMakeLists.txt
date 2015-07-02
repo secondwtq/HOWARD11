@@ -14,37 +14,38 @@ function(prepend var prefix)
     set(${var} "${listVar}" PARENT_SCOPE)
 endfunction(prepend)
 
-set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx FSMCommon.hxx FSMLogger.hxx FSMLogger.hxx)
+set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx FSMCommon.hxx FSMLogger.hxx FSMHelper.hxx)
 
 set(SOURCE_VERDANDI GLCommon.hxx GLFoundation.hxx GLFoundation.cxx
     GLShader.hxx GLShader.cxx GLShaderExt.hxx
     GLShaderExtDef.hxx)
 
 set(SOURCE_STANNUM StannumCommon.hxx Stannum.hxx Stannum.cxx StannumShaderCache.hxx
-    StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx)
+    StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx StannumSprite.hxx)
 
 set(SOURCE_DWIGHT HowardBase.hxx HowardBaseEx.cxx Node.hxx Node.cxx Handle.hxx Handle.cxx
 RootNode.hxx HandleE.hxx HandleManager.hxx SceneManager.hxx SceneManager.cxx ScriptNode.hxx
-StannumSpriteNode.hxx)
+StannumSpriteNode.hxx Event.hxx ScriptEvent.hxx)
 
-set(SOURCE_THIRDPT howardgl.hxx stb.cxx)
+set(SOURCE_THIRDPT howardgl.hxx stb.cxx mozjs.hxx)
+
+set(SOURCE_MISC Transform.hxx Transform.cxx hassert.hxx AtTheVeryBeginning.hxx AtTheVeryBeginning.cxx)
 
 prepend(SOURCE_FSM "FSM" ${SOURCE_FSM})
 prepend(SOURCE_VERDANDI Verdandi ${SOURCE_VERDANDI})
 prepend(SOURCE_STANNUM Stannum ${SOURCE_STANNUM})
 prepend(SOURCE_DWIGHT Dwight ${SOURCE_DWIGHT})
 prepend(SOURCE_THIRDPT thirdpt ${SOURCE_THIRDPT})
+prepend(SOURCE_MISC Misc ${SOURCE_MISC})
 
 set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} ${SOURCE_DWIGHT}
-    ${SOURCE_THIRDPT})
+    ${SOURCE_THIRDPT} ${SOURCE_MISC})
 
-set(SOURCE_OTHER src/Debug.hxx
-    src/Common.hxx src/Asset.hxx src/Entry.cxx src/Misc/AtTheVeryBeginning.hxx src/Misc/AtTheVeryBeginning.cxx
-    src/Acheron.hxx src/Asset.cxx)
+set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
-add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/Transform.hxx src/Misc/Transform.cxx src/Stannum/StannumSprite.hxx src/Dwight/Event.hxx src/Dwight/ScriptEvent.hxx src/thirdpt/mozjs.hxx src/thirdpt/mozjs.hxx src/Misc/hassert.hxx)
+add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER})
 
 set(HOWARD_LIBS ${HOWARD_LIBS} glfw3)
 set(HOWARD_LIBS ${HOWARD_LIBS} confuse)
