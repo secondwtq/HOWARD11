@@ -32,7 +32,7 @@ typedef unsigned int GLuint; // hack, it seems other OS have no gltypes.h
 
 #define ATTR_OBJECT(id, type) \
 	typedef type type_vert_obj_##id; \
-	void attribute_attr_##id();
+	void attribute_attr_##id()
 
 namespace Howard {
 namespace Verdandi {

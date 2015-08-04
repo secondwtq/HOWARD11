@@ -13,15 +13,47 @@
 #define HOWARD11_SCRIPTEVENT_HXX
 
 #include "Event.hxx"
+#include "Node.hxx"
+
+#include <memory>
+#include "../thirdpt/mozjs.hxx"
 
 namespace Howard {
 
-class ScriptEvent : public Event {
+class ScriptEvent final : public Event {
 
-    public:
+public:
+    typedef std::shared_ptr<ScriptEvent> shared_ptr_t;
 
-    EventType event_type() override { return ScriptEvent; }
+    EventType event_type() const override { return EventType::EScriptEvent; }
+    EventTypeExt event_type_ext() const override { return this->m_type_ext; }
 
+    JS::PersistentRootedValue scriptObject;
+
+private:
+
+    EventTypeExt m_type_ext = static_cast<EventTypeExt>(EventType::EEnd) + 1;
+};
+
+class EventListenerScript final : public EventListener {
+public:
+    EventListenerScript(Node *parent, EventTypeExt typext) :
+            EventListenerScript(parent, typext, DEFAULT_PRIORITY) { }
+
+    EventListenerScript(Node *parent, EventTypeExt typext, int priority) :
+            EventListener(parent, EventType::EScriptEvent, priority) { }
+
+    EventTypeExt type_ext() const { return this->m_type_ext; }
+
+    virtual void invoke(Event::shared_ptr_t event) override {
+
+    }
+
+private:
+
+    // JS::PersistentRootedFunction m_callback;
+
+    EventTypeExt m_type_ext = static_cast<EventTypeExt>(EventType::EEnd) + 1;
 };
 
 }

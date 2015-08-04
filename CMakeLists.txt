@@ -3,6 +3,21 @@ project(HOWARD11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
 
+if(MSVC)
+    message("Compiling with MSVC, well maybe it's unsupported")
+    if(CMAKE_CXX_FLAGS MATCHES "/W[0-4]")
+        string(REGEX REPLACE "/W[0-4]" "/W4" CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS}")
+    else()
+        set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} /W4")
+    endif(MSVC)
+elseif(CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+    message("Compiling with Clang ...")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+elseif(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_GNUCXX)
+    message("Compiling with GNU-like CXX compiler ...")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wno-long-long -pedantic")
+endif()
+
 include_directories(SYSTEM src)
 
 # stackoverflow.com/questions/4346412/how-to-prepend-all-filenames-on-the-list-with-common-path
@@ -45,7 +60,7 @@ set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Ac
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
-add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER})
+add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/hash_fix.hxx src/Dwight/Observers.hxx src/Dwight/EventAndObservers.cxx)
 
 set(HOWARD_LIBS ${HOWARD_LIBS} glfw3)
 set(HOWARD_LIBS ${HOWARD_LIBS} confuse)

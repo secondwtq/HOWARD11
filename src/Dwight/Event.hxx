@@ -12,20 +12,45 @@
 #ifndef HOWARD11_EVENT_HXX
 #define HOWARD11_EVENT_HXX
 
+#include <memory>
+
 namespace Howard {
 
+class Node;
+
 enum EventType {
-    Foundation,
-    ScriptEvent
+    ENone,
+    EFoundation,
+    EScriptEvent,
+    EEnd
 };
+
+typedef int EventTypeExt;
 
 class Event {
 
-    public:
+public:
+    typedef std::shared_ptr<Event> shared_ptr_t;
 
-    virtual EventType event_type() { return Foundation; }
-    virtual int event_type_ext() { return EventType::Foundation; }
+    virtual ~Event() { }
 
+    virtual EventType event_type() const { return EFoundation; }
+    virtual EventTypeExt event_type_ext() const { return EventType::EFoundation; }
+
+    Node *source() const { return this->m_source; }
+    void set_source(Node *source) { this->m_source = source; }
+
+    Node *root() const { return this->m_root; }
+    void set_root(Node *root) { this->m_root = root; }
+
+    void stop_propagation() { this->m_stopped = true; }
+    bool stopped() const { return this->m_stopped; }
+
+private:
+
+    Node *m_source = nullptr;
+    Node *m_root = nullptr;
+    bool m_stopped = false;
 };
 
 }

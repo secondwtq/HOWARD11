@@ -24,6 +24,8 @@ enum HowardRTTIType {
     TNode = 1,
     THandle = 2,
     TAsset = 3,
+    TEventQueueGlobal = 4,
+    TEventNotificationCenter = 5
 };
 
 }

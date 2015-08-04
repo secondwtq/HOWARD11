@@ -21,9 +21,14 @@
 
 #include "HandleManager.hxx"
 
+#include <unordered_map>
 #include <vector>
+#include <set>
+#include <memory>
+#include <map>
 
 #include "HandleE.hxx"
+#include "../Misc/hash_fix.hxx"
 
 namespace Howard {
 
@@ -36,17 +41,68 @@ enum HowardNodeType {
 
 };
 
+class Node;
 class RootNode;
-
 namespace Stannum {
     class RenderQueue; }
+
+class EventListener;
+class EventListenerScript;
+
+//
+// We'll guarantee several things for Howard::Event(s):
+//
+//  * the callback of parent node is called, prior to the child node
+//
+// and there is something undefined,
+//  depending on something like the implementation of some STL classes
+//
+//  * the order of listeners of the same event and the same priority
+//
+class EventListener {
+public:
+
+    static constexpr const int DEFAULT_PRIORITY = 64;
+
+    EventListener(Node *parent, EventType type) :
+            EventListener(parent, type, DEFAULT_PRIORITY) { }
+
+    EventListener(Node *parent, EventType type, int priority) :
+            m_priority(priority), m_type(type), m_parent(parent) { }
+
+    virtual ~EventListener() { }
+
+    EventType type() const { return this->m_type; }
+
+    bool enabled() const { return this->m_enabled; }
+    void set_enabled(bool enabled) { this->m_enabled = enabled; }
+    void enable() { this->set_enabled(true); }
+    void disable() { this->set_enabled(false); }
+
+    int priority() const { return m_priority; }
+    Node *parent() { return this->m_parent; }
+
+    struct compare_ptr_priority {
+        bool operator () (const EventListener * lhs, const EventListener * rhs) const {
+            return (lhs->priority()) < (rhs->priority()); }
+    };
+
+    virtual void invoke(Event::shared_ptr_t event) { }
+
+private:
+
+    bool m_enabled = true;
+    int m_priority = DEFAULT_PRIORITY;
+    EventType m_type = EventType::ENone;
+    Node *m_parent = nullptr;
+};
 
 class Node : public HowardBase {
 
     public:
 
     Node (class RootNode *scene);
-    Node (HandleObj<Node> scene) : Node(scene.get()) { };
+    // Node (Node *scene) : Node(*scene) { };
     ~Node();
 
     Node (const Node&) = delete;
@@ -71,38 +127,21 @@ class Node : public HowardBase {
     //  ...
     // -> on_detach -> child->on_enter -> on_exit
     virtual void on_attach() { }
-
     virtual void on_detach() { }
-
     virtual void on_enter() { }
-
     virtual void on_exit() { }
 
     // ATTENTION: this function is to be called
     //  in the Stannum thread and thus not to be overloaded
     //  by ScriptNode, it's used by Stannum nodes only.
     virtual void on_paint(Stannum::RenderQueue *queue) { }
-
     virtual void on_update() { }
-
     virtual bool on_event(const Event& event) { return true; }
 
-    void invoke_event(const Event& event) {
-        bool t = this->on_event(event);
-        if (t) {
-            for (auto ch : m_children) {
-                ch->invoke_event(event); }
-        }
-    }
-
-    void set_parent(HandleObj<Node> parent) {
-        assert(!this->get_parent());
-        this->m_parent = parent; }
-
-    HandleObj<Node> get_parent() const {
+    Node *get_parent() const {
         return this->m_parent; }
 
-    bool has_child(HandleObj<Node> child) const {
+    bool has_child(Node *child) const {
         for (auto handle : m_children)
             if (handle == child)
                 return true;
@@ -110,9 +149,9 @@ class Node : public HowardBase {
     }
 
     bool has_parent() const {
-        return this->m_parent; }
+        return (this->m_parent != nullptr); }
 
-    void add_child(HandleObj<Node> child) {
+    void add_child(Node *child) {
         if (!this->has_child(child)) {
             child->set_parent(this);
             this->m_children.push_back(child);
@@ -121,7 +160,7 @@ class Node : public HowardBase {
         }
     }
 
-    void detach_child(HandleObj<Node> child) {
+    void detach_child(Node *child) {
         ssize_t idx = HO_INVALIDX;
         for (size_t i = 0; i < m_children.size(); i++) {
             if (m_children[i] == child) {
@@ -134,14 +173,15 @@ class Node : public HowardBase {
             child->on_detach();
             child->on_exit_();
             m_children.erase(m_children.begin() + idx);
-            child->set_parent(HO_HANDLE_NULL);
+            child->set_parent(nullptr);
         }
     }
 
-    void attach_to(HandleObj<Node> parent) {
+    // if the Node already has a parent
+    //  you must detach first, then attach to another
+    void attach_to(Node *parent) {
         if (!this->has_parent()) {
-            parent->add_child(this);
-        }
+            parent->add_child(this); }
     }
 
     void detach_from_parent() {
@@ -149,17 +189,7 @@ class Node : public HowardBase {
             this->get_parent()->detach_child(this); }
     }
 
-    RootNode *get_root() {
-        if (this->node_typeid() != HowardNodeType::NRootNode) {
-            if (this->has_parent()) {
-                return this->get_parent()->get_root();
-            } else {
-                ASSERT_FOUNDATION();
-                return nullptr;
-            }
-        } else {
-            return reinterpret_cast<RootNode *>(this); }
-    }
+    RootNode *get_root();
 
     void on_paint_(Stannum::RenderQueue *queue) {
         for (auto ch : m_children) {
@@ -173,17 +203,55 @@ class Node : public HowardBase {
             ch->on_update_(); }
     }
 
-    protected:
+    EventListener *add_listener(EventListener *listener) {
+        this->m_listeners[listener->type()].insert(listener);
+        return listener;
+    }
 
-        // for RootNode
+    EventListener *add_listener_with_type(EventType type, EventListener *listener) {
+        ASSERT(listener->type() == type);
+        ASSERT(listener->parent() == this);
+
+        return this->add_listener(listener);
+    }
+
+    bool remove_listener(EventType type, const EventListener *listener) {
+        ASSERT(listener);
+        ASSERT(listener->type() == type);
+
+        auto listeners_i = this->m_listeners.find(type);
+        if (listeners_i != this->m_listeners.end()) {
+            auto listeners = listeners_i->second;
+            for (auto i = listeners.begin(); i != listeners.end(); ++i) {
+                if (*i == listener) {
+                    listeners.erase(i);
+                    delete listener;
+                    return true;
+                }
+            }
+        }
+
+        return false;
+    }
+
+    void invoke_event(Event::shared_ptr_t event);
+
+// that's only for RootNode
+protected:
         Node(bool any_found) : m_is_root(true) { }
 
-    private:
+private:
 
-        HandleObj<Node> m_parent = nullptr;
-        std::vector<HandleObj<Node>> m_children;
+        Node *m_parent = nullptr;
+        std::vector<Node *> m_children;
         bool m_is_root = false;
 
+        std::unordered_map<EventType, std::set<EventListener *, EventListener::compare_ptr_priority>,
+                enum_hash<EventType>> m_listeners;
+        std::unordered_map<EventTypeExt, std::set<EventListenerScript *, EventListener::compare_ptr_priority>>
+                m_script_listeners;
+
+private:
     void on_enter_() {
         this->on_enter();
         for (auto ch : m_children) {
@@ -195,6 +263,10 @@ class Node : public HowardBase {
             ch->on_exit_(); }
         this->on_exit();
     }
+
+    void set_parent(Node *parent) {
+        assert(!this->get_parent());
+        this->m_parent = parent; }
 
 };
 

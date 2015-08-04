@@ -37,7 +37,7 @@ class Handle {
 
     const char *class_name() const { return "Handle"; }
 
-    static constexpr const char *handle_type() { return T::m_class_name; };
+    static constexpr const char *handle_type() { return T::m_class_name; }
 
     inline int id() const { return this->m_ref; }
 

@@ -45,8 +45,8 @@ class Image {
     Image(const Image&) = delete;
     Image& operator = (const Image&) = delete;
 
-    Image(Image&& other) : m_name(std::move(other.m_name)), m_image(std::move(other.m_image)),
-                           size(other.size) { }
+    Image(Image&& other) : size(other.size),
+        m_name(std::move(other.m_name)), m_image(std::move(other.m_image)) { }
 
     Image& operator = (Image&& other) {
         this->m_name = std::move(other.m_name);

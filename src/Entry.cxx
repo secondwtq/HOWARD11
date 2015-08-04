@@ -117,6 +117,7 @@ int main() {
     glfwSetCursorPosCallback(window, glfw_cursorcb);
     glfwSetFramebufferSizeCallback(window, glfw_fbsizecb);
     glfwMakeContextCurrent(window);
+    glfwSetMouseButtonCallback(window, glfw_mousecb);
 //    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
     Howard::Verdandi::gl_init();
@@ -139,7 +140,7 @@ int main() {
     texture = new Howard::Verdandi::Texture("node_tex", textureimage, { 133, 154 }, { 80, 71 });
 
     Howard::StannumSpriteNode *sprite = new Howard::StannumSpriteNode(root, texture);
-    sprite->set_position({ 256, 0, 0 });
+    sprite->set_position({ 512, 256, 0 });
     sprite->attach_to({ &r });
 
     log("GLManager", L::Message) << "Context Initialized, entering loop (OpenGL " << glGetString(GL_VERSION) << ") ..." << rn;
@@ -147,7 +148,7 @@ int main() {
     while (!glfwWindowShouldClose(window)) {
         int width, height;
         glfwGetFramebufferSize(window, &width, &height);
-        float ratio = width / (float) height;
+        // float ratio = width / (float) height;
 
         main_loop();
 

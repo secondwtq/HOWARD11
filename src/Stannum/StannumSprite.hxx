@@ -78,7 +78,7 @@ struct DataSprite {
     }
 
     void set_position_and_size(const glm::vec2& location, const glm::vec2& size) {
-        glm::vec2 size_ = size / (float) 2.0;
+        // glm::vec2 size_ = size / (float) 2.0;
         data[0].position = data[5].position = glm::vec3(location.x - size.x, location.y -
                                                                              size.y, 0);
         data[4].position = glm::vec3(location.x + size.x, location.y - size.y, 0);

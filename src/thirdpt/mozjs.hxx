@@ -14,7 +14,7 @@
 
 #include <jsapi.h>
 
-#include <xoundation/spde.hpp>
+#include <xoundation/spde.hxx>
 #include <xoundation/spde_helper.hxx>
 
 #endif // HOWARD11_MOZJS_HXX

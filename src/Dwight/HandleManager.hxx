@@ -34,9 +34,7 @@ class HandleManager {
     inline void init_site(std::size_t id, T *ptr) {
         if (this->m_data.size() > id && (get(id) == nullptr)) {
             m_data[id] = ptr;
-        } else {
-            ASSERT_FOUNDATION();
-        }
+        } else { ASSERT_FOUNDATION(); }
     }
 
     inline void clear_site(std::size_t id) {
