@@ -45,7 +45,7 @@ public:
 
     EventTypeExt type_ext() const { return this->m_type_ext; }
 
-    virtual void invoke(Event::shared_ptr_t event) override {
+    virtual void on_event(Event::shared_ptr_t event) override {
 
     }
 

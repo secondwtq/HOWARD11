@@ -14,11 +14,17 @@
 #include "HowardBase.hxx"
 #include "Debug.hxx"
 
+#include "Event.hxx"
+
 #include <map>
+#include <unordered_map>
 
 namespace Howard {
 
 class Node;
+class EventListener;
+class Event;
+class ScriptEvent;
 
 class EventQueueGlobal : public HowardBase {
 public:
@@ -99,6 +105,15 @@ public:
 private:
 
     std::map<Node *, bool> m_nodes;
+};
+
+class EventNotificationGlobal : public HowardBase {
+public:
+
+private:
+
+//    std::unordered_map<EventType, std::map<Node *, bool>> m_nodes;
+//    std::unordered_map<EventTypeExt, std::map<Node *, bool>> m_script_nodes;
 };
 
 }

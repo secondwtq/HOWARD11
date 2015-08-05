@@ -25,13 +25,13 @@ Node::Node(class RootNode *scene) : RTTIID(scene->node_manager->allocate_site())
 
 Node::~Node () {
     if (!this->m_is_root)
-        this->get_root()->node_manager->clear_site(this->RTTIID);
+        this->root()->node_manager->clear_site(this->RTTIID);
 }
 
-RootNode *Node::get_root() {
+RootNode *Node::root() {
     if (this->node_typeid() != HowardNodeType::NRootNode) {
         if (this->has_parent()) {
-            return this->get_parent()->get_root();
+            return this->parent()->root();
         } else {
             ASSERT_FOUNDATION();
             return nullptr;
@@ -51,7 +51,7 @@ void Node::invoke_event(Event::shared_ptr_t event)  {
                 if (event->stopped()) {
                     return; }
                 if (listener->enabled()) {
-                    listener->invoke(event); }
+                    listener->on_event(event); }
             }
         }
     } else {
@@ -61,7 +61,7 @@ void Node::invoke_event(Event::shared_ptr_t event)  {
                 if (event->stopped()) {
                     return; }
                 if (listener->enabled()) {
-                    listener->invoke(event); }
+                    listener->on_event(event); }
             }
         }
     }

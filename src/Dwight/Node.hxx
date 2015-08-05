@@ -72,22 +72,22 @@ public:
 
     virtual ~EventListener() { }
 
-    EventType type() const { return this->m_type; }
+    EventType listener_type() const { return this->m_type; }
 
     bool enabled() const { return this->m_enabled; }
     void set_enabled(bool enabled) { this->m_enabled = enabled; }
     void enable() { this->set_enabled(true); }
     void disable() { this->set_enabled(false); }
 
-    int priority() const { return m_priority; }
-    Node *parent() { return this->m_parent; }
+    int listener_priority() const { return m_priority; }
+    Node *listener_parent() { return this->m_parent; }
 
     struct compare_ptr_priority {
         bool operator () (const EventListener * lhs, const EventListener * rhs) const {
-            return (lhs->priority()) < (rhs->priority()); }
+            return (lhs->listener_priority()) < (rhs->listener_priority()); }
     };
 
-    virtual void invoke(Event::shared_ptr_t event) { }
+    virtual void on_event(Event::shared_ptr_t event) { }
 
 private:
 
@@ -136,9 +136,8 @@ class Node : public HowardBase {
     //  by ScriptNode, it's used by Stannum nodes only.
     virtual void on_paint(Stannum::RenderQueue *queue) { }
     virtual void on_update() { }
-    virtual bool on_event(const Event& event) { return true; }
 
-    Node *get_parent() const {
+    Node *parent() {
         return this->m_parent; }
 
     bool has_child(Node *child) const {
@@ -186,10 +185,10 @@ class Node : public HowardBase {
 
     void detach_from_parent() {
         if (this->has_parent()) {
-            this->get_parent()->detach_child(this); }
+            this->parent()->detach_child(this); }
     }
 
-    RootNode *get_root();
+    RootNode *root();
 
     void on_paint_(Stannum::RenderQueue *queue) {
         for (auto ch : m_children) {
@@ -204,20 +203,20 @@ class Node : public HowardBase {
     }
 
     EventListener *add_listener(EventListener *listener) {
-        this->m_listeners[listener->type()].insert(listener);
+        this->m_listeners[listener->listener_type()].insert(listener);
         return listener;
     }
 
     EventListener *add_listener_with_type(EventType type, EventListener *listener) {
-        ASSERT(listener->type() == type);
-        ASSERT(listener->parent() == this);
+        ASSERT(listener->listener_type() == type);
+        ASSERT(listener->listener_parent() == this);
 
         return this->add_listener(listener);
     }
 
     bool remove_listener(EventType type, const EventListener *listener) {
         ASSERT(listener);
-        ASSERT(listener->type() == type);
+        ASSERT(listener->listener_type() == type);
 
         auto listeners_i = this->m_listeners.find(type);
         if (listeners_i != this->m_listeners.end()) {
@@ -238,18 +237,18 @@ class Node : public HowardBase {
 
 // that's only for RootNode
 protected:
-        Node(bool any_found) : m_is_root(true) { }
+    Node(bool any_found) : m_is_root(true) { }
 
 private:
 
-        Node *m_parent = nullptr;
-        std::vector<Node *> m_children;
-        bool m_is_root = false;
+    Node *m_parent = nullptr;
+    std::vector<Node *> m_children;
+    bool m_is_root = false;
 
-        std::unordered_map<EventType, std::set<EventListener *, EventListener::compare_ptr_priority>,
-                enum_hash<EventType>> m_listeners;
-        std::unordered_map<EventTypeExt, std::set<EventListenerScript *, EventListener::compare_ptr_priority>>
-                m_script_listeners;
+    std::unordered_map<EventType, std::set<EventListener *, EventListener::compare_ptr_priority>,
+            enum_hash<EventType>> m_listeners;
+    std::unordered_map<EventTypeExt, std::set<EventListenerScript *, EventListener::compare_ptr_priority>>
+            m_script_listeners;
 
 private:
     void on_enter_() {
@@ -265,7 +264,7 @@ private:
     }
 
     void set_parent(Node *parent) {
-        assert(!this->get_parent());
+        assert(!this->parent());
         this->m_parent = parent; }
 
 };
