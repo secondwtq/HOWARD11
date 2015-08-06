@@ -103,7 +103,8 @@ int main() {
 
         spd::class_info<Verdandi::Texture>::inst_wrapper::set(
                 new spd::class_info<Verdandi::Texture>(*jsruntime, "Texture"));
-        klass<Verdandi::Texture>().inherits<Asset, const std::string&, Verdandi::TextureImage *>(global);
+        klass<Verdandi::Texture>().inherits<Asset, const std::string&, Verdandi::TextureImage *>(global)
+                .static_func<SPD_DEF(Verdandi::Texture::createWithEntireImage)>("createWithEntireImage");
 
         spd::class_info<EventListener>::inst_wrapper::set(new spd::class_info<EventListener>(*jsruntime, "EventListener"));
         klass<EventListener>().inherits<HowardBase, Node *>(global);
@@ -139,7 +140,7 @@ int main() {
                 .method<SPD_DEF(&Event::stopped)>("stopped");
 
         spd::class_info<HCoord>::inst_wrapper::set(new spd::class_info<HCoord>(*jsruntime, "HCoord"));
-        klass<HCoord>().define(global)
+        klass<HCoord>().define<int, int, int>(global)
                 .property<int, &HCoord::x>("x")
                 .property<int, &HCoord::y>("y")
                 .property<int, &HCoord::z>("z");

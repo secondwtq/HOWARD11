@@ -127,6 +127,9 @@ class Texture : public Asset {
         pos_end = (pos_ + size_) / psize;
     }
 
+    static Texture *createWithEntireImage(const std::string& name, const TextureImage *parent) {
+        return new Texture(name, parent); }
+
     VGLIDX id() const { return m_parent->id(); }
 
     const char *asset_type() const override { return Texture::m_asset_type; }
