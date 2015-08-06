@@ -112,8 +112,11 @@ class Texture : public Asset {
 
     public:
 
-    Texture(const std::string& name, const TextureImage *parent, const glm::u16vec2& pp = HO_UPOS_DEFAULT,
-            const glm::u16vec2& ss = HO_SIZE_DEFAULT) : Asset(name), pos(pp), size(ss), m_parent(parent) {
+    Texture(const std::string& name, const TextureImage *parent) :
+            Texture(name, parent, HO_UPOS_DEFAULT, HO_SIZE_DEFAULT) { }
+
+    Texture(const std::string& name, const TextureImage *parent, const glm::u16vec2& pp,
+            const glm::u16vec2& ss) : Asset(name), pos(pp), size(ss), m_parent(parent) {
         if (pp == HO_UPOS_DEFAULT)
             pos = { 0, 0 };
         if (size == HO_SIZE_DEFAULT)

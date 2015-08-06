@@ -37,6 +37,9 @@ class AssetManager : public HandleManager<Asset> {
     Asset *named(const char *name) {
         return this->m_namemap.at(name); }
 
+    Asset *named(const std::string& name) {
+        return this->m_namemap.at(name.c_str()); }
+
     inline void init_site(std::size_t id, const char *name, Asset *ptr) {
         HandleManager<Asset>::init_site(id, ptr);
         this->m_namemap[name] = ptr;

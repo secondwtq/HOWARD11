@@ -56,7 +56,7 @@ prepend(SOURCE_MISC Misc ${SOURCE_MISC})
 set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} ${SOURCE_DWIGHT}
     ${SOURCE_THIRDPT} ${SOURCE_MISC})
 
-set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx)
+set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx src/GLFWEvents.hxx src/GLFWEvents.cxx src/JSFunctions.hxx src/JSFunctions.cxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
@@ -64,6 +64,7 @@ add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/hash_fix.hxx src/
 
 set(HOWARD_LIBS ${HOWARD_LIBS} glfw3)
 set(HOWARD_LIBS ${HOWARD_LIBS} confuse)
+set(HOWARD_LIBS ${HOWARD_LIBS} mozjs-31)
 
 if(APPLE)
 
@@ -76,6 +77,7 @@ if(APPLE)
         ${FRAMEWORK_CORE_VIDEO})
 
     set(HOWARD_LIBS ${HOWARD_LIBS} ${EXTRA_LIBS_APPLE})
+    set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pagezero_size 10000 -image_base 100000000")
 
 endif(APPLE)
 

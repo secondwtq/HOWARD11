@@ -20,7 +20,7 @@ constexpr const char RootNode::m_node_type[];
 constexpr const char StannumSpriteNode::m_node_type[];
 constexpr const char ScriptNode::m_node_type[];
 
-Node::Node(class RootNode *scene) : RTTIID(scene->node_manager->allocate_site()) {
+Node::Node(class RootNode *scene) : EventListener(this), RTTIID(scene->node_manager->allocate_site()) {
     scene->node_manager->init_site(this->RTTIID, this); }
 
 Node::~Node () {

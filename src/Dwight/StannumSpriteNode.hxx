@@ -31,6 +31,9 @@ public:
             : Node(scene), camera(Transform::IsometricCamera::instance) {
         m_data.set_texture_and_pos(texture, { 0, 0 }); }
 
+    static StannumSpriteNode *create(RootNode *scene, Verdandi::Texture *texture) {
+        return new StannumSpriteNode(scene, texture); }
+
     virtual HowardNodeType node_typeid() const { return HowardNodeType::NStannumSpriteNode; }
     virtual const char *node_type() const { return StannumSpriteNode::m_node_type; }
 

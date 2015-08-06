@@ -32,6 +32,8 @@ class Event {
 public:
     typedef std::shared_ptr<Event> shared_ptr_t;
 
+    static inline shared_ptr_t create_shared() { return std::make_shared<Event>(); }
+
     virtual ~Event() { }
 
     virtual EventType event_type() const { return EFoundation; }
@@ -40,6 +42,7 @@ public:
     Node *source() const { return this->m_source; }
     void set_source(Node *source) { this->m_source = source; }
 
+    // indicates the node it starts propagation
     Node *root() const { return this->m_root; }
     void set_root(Node *root) { this->m_root = root; }
 

@@ -16,19 +16,26 @@
 #include "Node.hxx"
 #include "HandleE.hxx"
 
+#include "../thirdpt/mozjs.hxx"
+
 namespace Howard {
 
 class ScriptNode : public Node {
 
-    public:
+public:
 
     ScriptNode (RootNode *scene) : Node(scene) { }
     ScriptNode (HandleObj<Node> scene) : Node(scene) { }
+
+    static ScriptNode *create(RootNode *scene) { return new ScriptNode(scene); }
 
     HowardNodeType node_typeid() const override { return HowardNodeType::NScriptNode; }
     const char *node_type() const override { return ScriptNode::m_node_type; }
 
     static constexpr const char m_node_type[] = "ScriptNode";
+
+    virtual void on_update() override { }
+    virtual void on_event(Event::shared_ptr_t event) override { }
 
 };
 

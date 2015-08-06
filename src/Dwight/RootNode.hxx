@@ -21,8 +21,8 @@ class RootNode : public Node {
 
     RootNode();
 
-    HowardNodeType node_typeid() const { return HowardNodeType::NRootNode; }
-    const char *node_type() const { return RootNode::m_node_type; }
+    HowardNodeType node_typeid() const override { return HowardNodeType::NRootNode; }
+    const char *node_type() const override { return RootNode::m_node_type; }
 
     static constexpr const char m_node_type[] = "RootNode";
 

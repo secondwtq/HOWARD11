@@ -43,4 +43,10 @@ enum HowardRTTIType {
 using HCoord = glm::i32vec3;
 using HPoint = glm::i16vec2;
 
+namespace xoundation {
+class SpdRuntime;
+}
+
+extern xoundation::SpdRuntime *jsruntime;
+
 #endif // HOWARD11_COMMON_HXX

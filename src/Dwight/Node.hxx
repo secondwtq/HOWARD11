@@ -27,6 +27,8 @@
 #include <memory>
 #include <map>
 
+#include <xoundation/spde.hxx>
+
 #include "HandleE.hxx"
 #include "../Misc/hash_fix.hxx"
 
@@ -64,21 +66,21 @@ public:
 
     static constexpr const int DEFAULT_PRIORITY = 64;
 
-    EventListener(Node *parent, EventType type) :
-            EventListener(parent, type, DEFAULT_PRIORITY) { }
+    EventListener(Node *parent) :
+            EventListener(parent, DEFAULT_PRIORITY) { }
 
-    EventListener(Node *parent, EventType type, int priority) :
-            m_priority(priority), m_type(type), m_parent(parent) { }
+    EventListener(Node *parent, int priority) :
+            m_priority(priority), m_parent(parent) { }
 
     virtual ~EventListener() { }
-
-    EventType listener_type() const { return this->m_type; }
 
     bool enabled() const { return this->m_enabled; }
     void set_enabled(bool enabled) { this->m_enabled = enabled; }
     void enable() { this->set_enabled(true); }
     void disable() { this->set_enabled(false); }
 
+    // it should not exist, but for the script ...
+    void set_listener_priority(int priority) { this->m_priority = priority; }
     int listener_priority() const { return m_priority; }
     Node *listener_parent() { return this->m_parent; }
 
@@ -93,11 +95,10 @@ private:
 
     bool m_enabled = true;
     int m_priority = DEFAULT_PRIORITY;
-    EventType m_type = EventType::ENone;
     Node *m_parent = nullptr;
 };
 
-class Node : public HowardBase {
+class Node : public EventListener, public xoundation::spd::intrusive_object<Node> {
 
     public:
 
@@ -107,6 +108,8 @@ class Node : public HowardBase {
 
     Node (const Node&) = delete;
     Node& operator = (const Node&) = delete;
+
+    static Node *create(RootNode *scene) { return new Node(scene); }
 
     HowardRTTIType WhatAmI() const { return HowardRTTIType::TNode; }
     const char *class_name() const { return Node::m_class_name; }
@@ -179,11 +182,13 @@ class Node : public HowardBase {
     // if the Node already has a parent
     //  you must detach first, then attach to another
     void attach_to(Node *parent) {
+        ASSERT(!this->has_parent());
         if (!this->has_parent()) {
             parent->add_child(this); }
     }
 
     void detach_from_parent() {
+        ASSERT(this->has_parent());
         if (this->has_parent()) {
             this->parent()->detach_child(this); }
     }
@@ -202,21 +207,34 @@ class Node : public HowardBase {
             ch->on_update_(); }
     }
 
-    EventListener *add_listener(EventListener *listener) {
-        this->m_listeners[listener->listener_type()].insert(listener);
+    EventListener *add_listener(EventType type, EventListener *listener) {
+        ASSERT(type != EventType::EScriptEvent);
+        ASSERT(listener->listener_parent() == this);
+
+        this->m_listeners[type].insert(listener);
         return listener;
     }
 
-    EventListener *add_listener_with_type(EventType type, EventListener *listener) {
-        ASSERT(listener->listener_type() == type);
+    EventListener *add_listener(EventType type, EventTypeExt typext, EventListener *listener) {
         ASSERT(listener->listener_parent() == this);
 
-        return this->add_listener(listener);
+        if (type != EventType::EScriptEvent) {
+            this->m_listeners[type].insert(listener);
+        } else {
+            this->m_script_listeners[typext].insert(listener);
+        }
+        return listener;
+    }
+
+    EventListener *add_script_listener(EventTypeExt typext, EventListener *listener) {
+        ASSERT(listener->listener_parent() == this);
+
+        this->m_script_listeners[typext].insert(listener);
+        return listener;
     }
 
     bool remove_listener(EventType type, const EventListener *listener) {
         ASSERT(listener);
-        ASSERT(listener->listener_type() == type);
 
         auto listeners_i = this->m_listeners.find(type);
         if (listeners_i != this->m_listeners.end()) {
@@ -237,7 +255,7 @@ class Node : public HowardBase {
 
 // that's only for RootNode
 protected:
-    Node(bool any_found) : m_is_root(true) { }
+    Node(bool any_found) : EventListener(this), m_is_root(true) { }
 
 private:
 
@@ -247,7 +265,7 @@ private:
 
     std::unordered_map<EventType, std::set<EventListener *, EventListener::compare_ptr_priority>,
             enum_hash<EventType>> m_listeners;
-    std::unordered_map<EventTypeExt, std::set<EventListenerScript *, EventListener::compare_ptr_priority>>
+    std::unordered_map<EventTypeExt, std::set<EventListener *, EventListener::compare_ptr_priority>>
             m_script_listeners;
 
 private:

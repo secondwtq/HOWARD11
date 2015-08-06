@@ -37,13 +37,11 @@ private:
 
 class EventListenerScript final : public EventListener {
 public:
-    EventListenerScript(Node *parent, EventTypeExt typext) :
-            EventListenerScript(parent, typext, DEFAULT_PRIORITY) { }
+    EventListenerScript(Node *parent) :
+            EventListenerScript(parent, DEFAULT_PRIORITY) { }
 
-    EventListenerScript(Node *parent, EventTypeExt typext, int priority) :
-            EventListener(parent, EventType::EScriptEvent, priority) { }
-
-    EventTypeExt type_ext() const { return this->m_type_ext; }
+    EventListenerScript(Node *parent, int priority) :
+            EventListener(parent, priority) { }
 
     virtual void on_event(Event::shared_ptr_t event) override {
 
@@ -52,8 +50,6 @@ public:
 private:
 
     // JS::PersistentRootedFunction m_callback;
-
-    EventTypeExt m_type_ext = static_cast<EventTypeExt>(EventType::EEnd) + 1;
 };
 
 }
