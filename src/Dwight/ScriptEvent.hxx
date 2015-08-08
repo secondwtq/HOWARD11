@@ -20,10 +20,13 @@
 
 namespace Howard {
 
-class ScriptEvent final : public Event {
+class ScriptEventBase final : public Event {
 
 public:
-    typedef std::shared_ptr<ScriptEvent> shared_ptr_t;
+    typedef std::shared_ptr<ScriptEventBase> shared_ptr_t;
+
+    ScriptEventBase(xoundation::spd::context_reference context) :
+            scriptObject(context) { }
 
     EventType event_type() const override { return EventType::EScriptEvent; }
     EventTypeExt event_type_ext() const override { return this->m_type_ext; }

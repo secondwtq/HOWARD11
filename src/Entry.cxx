@@ -16,8 +16,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <xoundation/spde.hxx>
-#include <xoundation/spde_helper.hxx>
+#include "thirdpt/mozjs.hxx"
 
 #include "Dwight/Node.hxx"
 #include "Dwight/Handle.hxx"
@@ -35,6 +34,9 @@
 
 #include "GLFWEvents.hxx"
 #include "JSFunctions.hxx"
+
+#include "Dwight/ScriptNode.hxx"
+#include "Dwight/ScriptEvent.hxx"
 
 #include <string>
 #include <memory>
@@ -83,8 +85,24 @@ int main() {
             JSPROP_ENUMERATE | JSPROP_PERMANENT | JSFUN_STUB_GSOPS);
 
         using namespace Howard;
+
+        spd::enumeration<HowardRTTIType>().define(*jsruntime, global, "HowardRTTIType")
+                .enumerator<HowardRTTIType::TBase>("TBase")
+                .enumerator<HowardRTTIType::TNode>("TNode")
+                .enumerator<HowardRTTIType::THandle>("THandle")
+                .enumerator<HowardRTTIType::TAsset>("TAsset")
+                .enumerator<HowardRTTIType::TEventQueueGlobal>("TEventQueueGlobal")
+                .enumerator<HowardRTTIType::TEventNotificationCenter>("TEventNotificationCenter");
+
+        spd::enumeration<HowardNodeType>().define(*jsruntime, global, "HowardNodeType")
+                .enumerator<HowardNodeType::NFoundation>("NFoundation")
+                .enumerator<HowardNodeType::NRootNode>("NRootNode")
+                .enumerator<HowardNodeType::NScriptNode>("NScriptNode")
+                .enumerator<HowardNodeType::NStannumSpriteNode>("NStannumSpriteNode");
+
         spd::class_info<HowardBase>::inst_wrapper::set(new spd::class_info<HowardBase>(*jsruntime, "HowardBase"));
         klass<HowardBase>().define<>(global)
+                .method<SPD_DEF(&HowardBase::WhatAmI)>("WhatAmI")
                 .method<decltype(&HowardBase::class_name), &HowardBase::class_name>("class_name");
 
         spd::class_info<Asset>::inst_wrapper::set(new spd::class_info<Asset>(*jsruntime, "Asset"));
@@ -112,7 +130,8 @@ int main() {
         spd::class_info<Node>::inst_wrapper::set(new spd::class_info<Node>(*jsruntime, "Node"));
         klass<Node>().inherits<EventListener, RootNode *>(global)
                 .static_func<decltype(Node::create), Node::create>("create")
-                .method<decltype(&Node::node_type), &Node::node_type>("node_type")
+                .method<SPD_DEF(&Node::node_typeid)>("node_typeid")
+                .method<SPD_DEF(&Node::node_type)>("node_type")
                 .method<SPD_DEF(&Node::parent)>("parent")
                 .method<SPD_DEF(&Node::has_parent)>("has_parent")
                 .method<SPD_DEF(&Node::has_child)>("has_child")

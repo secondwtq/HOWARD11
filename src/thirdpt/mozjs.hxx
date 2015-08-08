@@ -16,5 +16,6 @@
 
 #include <xoundation/spde.hxx>
 #include <xoundation/spde_helper.hxx>
+#include <xoundation/spde/spde_enum.hxx>
 
 #endif // HOWARD11_MOZJS_HXX

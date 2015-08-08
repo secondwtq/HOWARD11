@@ -20,14 +20,18 @@
 
 namespace Howard {
 
-class ScriptNode : public Node {
+// be 'final', sure?
+class ScriptNode final : public Node {
 
 public:
 
-    ScriptNode (RootNode *scene) : Node(scene) { }
-    ScriptNode (HandleObj<Node> scene) : Node(scene) { }
+    ScriptNode (RootNode *scene, xoundation::spd::context_reference context) :
+            Node(scene), data(context) { }
+    ScriptNode (HandleObj<Node> scene, xoundation::spd::context_reference context) :
+            Node(scene), data(context) { }
 
-    static ScriptNode *create(RootNode *scene) { return new ScriptNode(scene); }
+    static ScriptNode *create(RootNode *scene, xoundation::spd::context_reference context) {
+        return new ScriptNode(scene, context); }
 
     HowardNodeType node_typeid() const override { return HowardNodeType::NScriptNode; }
     const char *node_type() const override { return ScriptNode::m_node_type; }
@@ -36,6 +40,8 @@ public:
 
     virtual void on_update() override { }
     virtual void on_event(Event::shared_ptr_t event) override { }
+
+    JS::PersistentRootedValue data;
 
 };
 
