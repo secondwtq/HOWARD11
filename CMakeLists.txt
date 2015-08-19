@@ -40,7 +40,9 @@ set(SOURCE_STANNUM StannumCommon.hxx Stannum.hxx Stannum.cxx StannumShaderCache.
 
 set(SOURCE_DWIGHT HowardBase.hxx Node.hxx Node.cxx Handle.hxx
 RootNode.hxx HandleManager.hxx SceneManager.hxx ScriptNode.hxx
-StannumSpriteNode.hxx Event.hxx ScriptEvent.hxx)
+StannumSpriteNode.hxx Event.hxx ScriptEvent.hxx InputEvent.hxx
+Observers.hxx ObserversDef.hxx EventAndObservers.cxx
+DwightScript.cxx Foundation.hxx)
 
 set(SOURCE_FACERCORE FacerEvent.hxx FacerEventKey.hxx FacerEvent.cxx FacerEventPortGLFW.hxx FacerEventPortGLFW.cxx)
 
@@ -59,7 +61,8 @@ prepend(SOURCE_MISC Misc ${SOURCE_MISC})
 set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} ${SOURCE_DWIGHT}
     ${SOURCE_FACERCORE} ${SOURCE_THIRDPT} ${SOURCE_MISC})
 
-set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx src/GLFWEvents.hxx src/GLFWEvents.cxx src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Dwight/ObserversDef.hxx src/Dwight/DwightScript.cxx src/Dwight/Foundation.hxx src/Dwight/InputEvent.hxx)
+set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx src/GLFWEvents.hxx src/GLFWEvents.cxx
+        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 

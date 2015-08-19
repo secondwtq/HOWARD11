@@ -1,4 +1,3 @@
-/// <reference path="FacerCore.d.ts" />
 
 declare enum HowardRTTIType {
 	TBase,
@@ -90,6 +89,16 @@ declare class InputEvent extends HEvent {
 	data: FacerEvent;
 }
 
+declare class ScriptEventBase<T> extends HEvent {
+	
+	static createShared(): HEvent;
+	static createShared<T>(typext: number): ScriptEventBase<T>;
+	
+	data: T;
+}
+
+declare type ScriptEventAny = ScriptEventBase<any>;
+
 interface EventListenerBase extends HowardBase {
 	
 }
@@ -116,6 +125,9 @@ interface HNode extends EventListenerBase {
 	detach_from_parent(): void;
 	root(): RootNode;
 
+	length: number;
+	child(idx: number): HNode;
+
 	addListener(type: EventType, typext: number, listener: EventListenerBase): EventListenerBase;
 	addScriptListener(typext: number, listener: EventListenerBase): EventListenerBase;
 	removeListener(type: EventType, listener: EventListenerBase): boolean;
@@ -139,6 +151,9 @@ declare class HNodeImpl implements EventListenerBase {
 	detach_from_parent(): void;
 	root(): RootNode;
 
+	length: number;
+	child(idx: number): HNode;
+
 	addListener(type: EventType, typext: number, listener: EventListenerBase): EventListenerBase;
 	addScriptListener(typext: number, listener: EventListenerBase): EventListenerBase;
 	removeListener(type: EventType, listener: EventListenerBase): boolean;
@@ -153,6 +168,10 @@ declare class ScriptNodeBase extends HNodeImpl implements ScriptNodeInterface {
 	static create(scene: RootNode): ScriptNodeInterface;
 	static attachNew(scene: RootNode): ScriptNodeInterface;
 	static reproto(proto: any): ScriptNodeInterface;
+	
+	onUpdate();
+	onEvent(event: HEvent);
+	onScriptEvent(event: ScriptEventAny);
 }
 
 declare class QueueGlobalEventBase implements HowardBase {
@@ -186,6 +205,8 @@ declare var Foundation: FoundationInstance;
 
 declare class StannumSpriteNode extends HNodeImpl {
 	static create(scene: RootNode, texture: Texture): StannumSpriteNode;
+	
+	position: HCoord;
 	// Set the sprite's position(3D, HCoord) in the world space
 	set_position(pos: HCoord): void;
 }

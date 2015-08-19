@@ -37,6 +37,9 @@ public:
     virtual HowardNodeType node_typeid() const { return HowardNodeType::NStannumSpriteNode; }
     virtual const char *node_type() const { return StannumSpriteNode::m_node_type; }
 
+    HCoord position() const {
+        return m_position; }
+
     void set_position(const HCoord& pos) {
         this->m_position = pos; }
 

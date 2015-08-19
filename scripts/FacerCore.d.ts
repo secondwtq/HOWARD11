@@ -1,3 +1,4 @@
+
 declare enum FacerEventType {
 	NoType,
 	MouseMove,

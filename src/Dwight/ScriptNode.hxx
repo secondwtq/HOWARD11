@@ -26,7 +26,7 @@ class ScriptNodeBase final : public HNode {
 public:
 
     ScriptNodeBase (RootNode *scene, xoundation::spd::context_reference context) :
-            HNode(scene), m_scriptctx(context) { printf("ScriptNode constructing ..."); }
+            HNode(scene), m_scriptctx(context) { printf("ScriptNode constructing ...\n"); }
     ScriptNodeBase (HandleObj<HNode> scene, xoundation::spd::context_reference context) :
             HNode(scene), m_scriptctx(context) { }
 

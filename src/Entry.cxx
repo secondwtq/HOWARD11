@@ -182,7 +182,10 @@ int main() {
                 .method<SPD_DEF(&HNode::detach_child)>("detach_child")
                 .method<SPD_DEF(&HNode::attach_to)>("attach_to")
                 .method<SPD_DEF(&HNode::detach_from_parent)>("detach_from_parent")
-                .method<SPD_DEF(&HNode::root)>("root");
+                .method<SPD_DEF(&HNode::root)>("root")
+                .accessor<size_t, &HNode::get_length>("length")
+                .method<SPD_DEF(&HNode::child)>("child")
+                .method<SPD_DEF(&HNode::invoke_event)>("invoke_event");
 
         class_info<RootNode>::inst_wrapper::set(new spd::class_info<RootNode>(rt, "RootNode"));
         klass<RootNode>().inherits<HNode>(global, spd::argpack<>());
@@ -234,6 +237,7 @@ int main() {
         klass<StannumSpriteNode>().inherits<HNode, spd::UseCXXLifetime>(
                         global, argpack<RootNode *, Verdandi::Texture *>())
                 .static_func<SPD_DEF(StannumSpriteNode::create)>("create")
+                .accessor<HCoord, &StannumSpriteNode::position>("position")
                 .method<SPD_DEF(&StannumSpriteNode::set_position)>("set_position");
 
         // class Event - Event.hxx
@@ -249,6 +253,7 @@ int main() {
         // class ScriptEventBase : Event - ScriptEvent.hxx
         class_info<ScriptEventBase>::inst_wrapper::set(new spd::class_info<ScriptEventBase>(rt, "ScriptEventBase"));
         klass<ScriptEventBase>().inherits<HEvent>(global, argpack<EventTypeExt, context_reference>())
+                .static_func<SPD_DEF(ScriptEventBase::createShared)>("createShared")
                 .property<JS::PersistentRootedValue, &ScriptEventBase::scriptObject>("data");
 
         // class InputEvent : Event - InputEvent.hxx
@@ -386,7 +391,7 @@ int main() {
         JSAutoCompartment comp(Howard::Foundation.JSRuntime(), Howard::Foundation.JSGlobal());
 
         JS::RootedValue ret_preload(Howard::Foundation.JSRuntime());
-        std::string buf = readfile("preload.js");
+        std::string buf = readfile("scripts/preload.js");
         JS_EvaluateScript(Howard::Foundation.JSRuntime(), Howard::Foundation.JSGlobal(), buf.c_str(),
             (unsigned int) buf.length(), "preload.js", 0, &ret_preload);
     }

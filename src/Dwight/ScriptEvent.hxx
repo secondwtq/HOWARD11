@@ -26,6 +26,9 @@ class ScriptEventBase final : public HEvent {
 public:
     typedef std::shared_ptr<ScriptEventBase> shared_ptr_t;
 
+    static ScriptEventBase::shared_ptr_t createShared(EventTypeExt type, xoundation::spd::context_reference context) {
+        return std::make_shared<ScriptEventBase>(type, context); }
+
     ScriptEventBase(EventTypeExt type, xoundation::spd::context_reference context) :
             scriptObject(context), m_type_ext(type) { }
 

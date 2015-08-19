@@ -237,6 +237,12 @@ class HNode : public EventListenerBase,
             this->parent()->detach_child(this); }
     }
 
+    size_t get_length() const {
+        return this->m_children.size(); }
+
+    HNode *child(size_t idx) {
+        return this->m_children[idx]; }
+
     RootNode *root();
 
     std::shared_ptr<EventListenerBase> addListener(EventType type, std::shared_ptr<EventListenerBase> listener) {

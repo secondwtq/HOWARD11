@@ -1,0 +1,14 @@
+{
+	"compilerOptions": {
+		"target": "ES5",
+		"charset": "UTF-8",
+		"emitBOM": false,
+		"out": "scripts/preload.js"
+	},
+	"files": [
+		"FacerCore.d.ts",
+		"HOWARD.d.ts",	
+		"prelib.ts",
+		"preload_main.ts"
+	]
+}
