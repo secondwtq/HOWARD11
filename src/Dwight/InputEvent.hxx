@@ -21,6 +21,9 @@ namespace Howard {
 class InputEvent : public HEvent {
 public:
 
+    static std::shared_ptr<InputEvent> createShared(const Facer::InputEvent& facer_event) {
+        return std::make_shared<InputEvent>(facer_event); }
+
     // ATTENTION: this is an exception: we allows the copy/assignment of some
     //  POD-like structure (like FacerEvent), but most of the cases,
     //  we just use references, and we have started employing more cool

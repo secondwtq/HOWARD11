@@ -31,6 +31,9 @@ enum EventQueueType {
     QueueTypeGlobalEventBaseMapped,
     QueueTypeUpdate,
     QueueTypePaint,
+    QueueTypeKeyboard,
+    QueueTypeMouseButton,
+    QueueTypeMouseMove,
     QueueTypeEnd
 };
 
@@ -56,6 +59,8 @@ public:
         this->_invoke();
         this->did_invoke();
     }
+
+    virtual void dispatch_event(HEvent::shared_ptr_t event) { }
 
     virtual void will_invoke() { }
     virtual void did_invoke() { }
@@ -134,6 +139,8 @@ public:
         return false;
     }
 
+    void dispatch_event(HEvent::shared_ptr_t event) override;
+
 private:
 
     void _invoke() override {
@@ -188,10 +195,17 @@ public:
     QueueGlobalEventBase *queue(EventQueueType type);
     QueueGlobalEventBase *queue(unsigned int qid);
 
-    inline QueueGlobalUpdate *updateQueue() {
+    inline QueueGlobalUpdate *queueUpdate() {
         return m_qupdate; }
-    inline QueueGlobalPaint *paintQueue(){
+    inline QueueGlobalPaint *queuePaint(){
         return m_qpaint; }
+
+    inline QueueGlobalEventBase *queueKeyboard() {
+        return m_qkeyboard; }
+    inline QueueGlobalEventBase *queueMouseButton() {
+        return m_qmousebtn; }
+    inline QueueGlobalEventBase *queueMouseMove() {
+        return m_qmousemve; }
 
 private:
 
@@ -199,16 +213,11 @@ private:
     QueueGlobalUpdate *m_qupdate;
     QueueGlobalPaint *m_qpaint;
 
+    QueueGlobalEventBase *m_qkeyboard;
+    QueueGlobalEventBase *m_qmousebtn;
+    QueueGlobalEventBase *m_qmousemve;
+
     std::unordered_map<unsigned int, QueueGlobalEventBase *> m_queues;
-};
-
-class EventNotificationGlobal : public HowardBase {
-public:
-
-private:
-
-//    std::unordered_map<EventType, std::map<Node *, bool>> m_nodes;
-//    std::unordered_map<EventTypeExt, std::map<Node *, bool>> m_script_nodes;
 };
 
 }

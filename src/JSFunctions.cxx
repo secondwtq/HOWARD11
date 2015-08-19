@@ -16,6 +16,8 @@
 #include <stdio.h>
 #include <string>
 
+using namespace xoundation;
+
 std::string readfile(const std::string& filename) {
     FILE *fp = fopen(filename.c_str(), "r");
     fseek(fp, 0, SEEK_END);
@@ -40,5 +42,30 @@ bool js_print(JSContext *context, unsigned int argc, JS::Value *vp) {
     printf("\n");
     args.rval().setUndefined();
 
+    return true;
+}
+
+void js_collectgarbage(xoundation::spd::context_reference ctx) {
+    JS_GC(JS_GetRuntime(ctx));
+}
+
+bool js_cast(JSContext *ctx, unsigned int argc, JS::Value *vp) {
+    JS::CallArgs args = JS::CallArgsFromVp(argc, vp);
+
+    JS::RootedObject tocast(ctx, args[0].toObjectOrNull());
+    spd::lifetime_base *lt = reinterpret_cast<spd::lifetime_base *>(JS_GetPrivate(tocast));
+    if (!lt || lt->is_intrusive) {
+        args.rval().setObject(*tocast.get());
+        return true;
+    }
+
+    JS::RootedObject org(ctx, args[1].toObjectOrNull());
+    JS::RootedObject proto(ctx, JS_GetReservedSlot(org, 1).toObjectOrNull());
+
+    const JSClass *klass = JS_GetClass(tocast);
+    JSObject *o = JS_NewObjectWithGivenProto(
+            ctx, klass, proto, JS::NullPtr());
+    JS_SetPrivate(o, lt->raw_copy());
+    args.rval().setObject(*o);
     return true;
 }

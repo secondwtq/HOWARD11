@@ -63,6 +63,42 @@ private:
     std::shared_ptr<Stannum::RenderQueue> queue;
 };
 
+class QueueGlobalKeyboard : public QueueGlobalEventBaseMapped {
+public:
+
+    const char *class_name() const override { return QueueGlobalKeyboard::m_class_name; }
+    const char *queue_name() const override { return QueueGlobalKeyboard::m_queue_name; }
+    EventQueueType queue_type() const override {
+        return EventQueueType::QueueTypeKeyboard; }
+    static constexpr const char m_class_name[] = "QueueGlobalKeyboard";
+    static constexpr const char m_queue_name[] = "GlobalKeyboard";
+
+};
+
+class QueueGlobalMouseButton : public QueueGlobalEventBaseMapped {
+public:
+
+    const char *class_name() const override { return QueueGlobalMouseButton::m_class_name; }
+    const char *queue_name() const override { return QueueGlobalMouseButton::m_queue_name; }
+    EventQueueType queue_type() const override {
+        return EventQueueType::QueueTypeMouseButton; }
+    static constexpr const char m_class_name[] = "QueueGlobalMouseButton";
+    static constexpr const char m_queue_name[] = "GlobalMouseButton";
+
+};
+
+class QueueGlobalMouseMove : public QueueGlobalEventBaseMapped {
+public:
+
+    const char *class_name() const override { return QueueGlobalMouseMove::m_class_name; }
+    const char *queue_name() const override { return QueueGlobalMouseMove::m_queue_name; }
+    EventQueueType queue_type() const override {
+        return EventQueueType::QueueTypeMouseMove; }
+    static constexpr const char m_class_name[] = "QueueGlobalMouseMove";
+    static constexpr const char m_queue_name[] = "GlobalMouseMove";
+
+};
+
 }
 
 #endif // HOWARD11_OBSERVERSDEF_HXX

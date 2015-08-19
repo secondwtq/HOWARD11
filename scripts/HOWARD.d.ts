@@ -18,6 +18,7 @@ declare enum HowardNodeType {
 declare enum EventType {
 	ENone,
 	EFoundation,
+	EInputEvent,
 	EScriptEvent,
 	EEnd
 }
@@ -25,12 +26,20 @@ declare enum EventType {
 declare enum EventQueueType {
 	QueueTypeGlobalEventBase,
 	QueueTypeGlobalEventBaseMapped,
+	
 	QueueTypeUpdate,
 	QueueTypePaint,
+	
+	QueueTypeKeyboard,
+	QueueTypeMouseButton,
+	QueueTypeMouseMove,
+	
 	QueueTypeEnd
 }
 
 declare function print(... args: any[]) : void;
+declare function collectgarbage(): void;
+declare function cast<From, To>(org: From, proto: { new (): To }): To;
 
 declare class HCoord {
 
@@ -43,7 +52,7 @@ declare class HCoord {
 
 declare class HPoint {
 
-	constructor(x: number, y: number, z: number);
+	constructor(x: number, y: number);
 
 	x: number;
 	y: number;
@@ -190,8 +199,13 @@ declare class QueueGlobalUpdate extends QueueGlobalEventBase { }
 declare class QueueGlobalPaint extends QueueGlobalEventBase { }
 
 declare class EventQueueManager {
-	updateQueue: QueueGlobalUpdate;
-	paintQueue: QueueGlobalPaint;
+	queueUpdate: QueueGlobalUpdate;
+	queuePaint: QueueGlobalPaint;
+	
+	queueKeyboard: QueueGlobalEventBase;
+	queueMouseButton: QueueGlobalEventBase;
+	queueMouseMove: QueueGlobalEventBase;
+	
 	queue(qid: number): QueueGlobalEventBase;
 }
 

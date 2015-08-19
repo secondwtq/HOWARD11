@@ -12,7 +12,7 @@
 
 #include "FacerEvent.hxx"
 
-class GLFWwindow;
+struct GLFWwindow;
 
 namespace Facer {
 namespace Port {

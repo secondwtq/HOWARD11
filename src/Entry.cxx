@@ -55,23 +55,6 @@ Howard::Verdandi::Texture *texture;
 
 #define SPD_DEF(target) decltype(target), (target)
 
-void main_loop() {
-    using namespace Howard;
-    using namespace xoundation;
-    SpdRuntime& rt = Foundation.JSRuntime();
-    JS::PersistentRootedObject& global = Foundation.JSGlobal();
-    JSAutoRequest req(rt);
-    JSAutoCompartment at_comp(rt, global);
-
-    Foundation.eventQueues().updateQueue()->invoke();
-    Transform::IsometricCamera::instance->update();
-
-    std::shared_ptr<Stannum::RenderQueue> queue(new Stannum::RenderQueue());
-    Foundation.eventQueues().paintQueue()->setRenderQueue(queue).invoke();
-
-    renderer.render_dispatch(queue);
-}
-
 using namespace xoundation;
 
 int main() {
@@ -93,6 +76,13 @@ int main() {
         JS_DefineFunction(rt, global, "print", js_print, 0,
             JSPROP_ENUMERATE | JSPROP_PERMANENT | JSFUN_STUB_GSOPS);
 
+        JS_DefineFunction(rt, global, "collectgarbage", function_callback_wrapper
+                <decltype(js_collectgarbage), js_collectgarbage>::callback, 0,
+                JSPROP_ENUMERATE | JSPROP_PERMANENT | JSFUN_STUB_GSOPS);
+
+        JS_DefineFunction(rt, global, "cast", js_cast, 2,
+                JSPROP_ENUMERATE | JSPROP_PERMANENT | JSFUN_STUB_GSOPS);
+
         enumeration<HowardRTTIType>().define(rt, global, "HowardRTTIType")
                 .enumerator<HowardRTTIType::TBase>("TBase")
                 .enumerator<HowardRTTIType::TNode>("TNode")
@@ -111,6 +101,7 @@ int main() {
         enumeration<EventType>().define(rt, global, "EventType")
                 .enumerator<EventType::ENone>("ENone")
                 .enumerator<EventType::EFoundation>("EFoundation")
+                .enumerator<EventType::EInputEvent>("EInputEvent")
                 .enumerator<EventType::EScriptEvent>("EScriptEvent")
                 .enumerator<EventType::EEnd>("EEnd");
 
@@ -125,6 +116,9 @@ int main() {
                 .enumerator<EventQueueType::QueueTypeGlobalEventBaseMapped>("QueueTypeGlobalEventBaseMapped")
                 .enumerator<EventQueueType::QueueTypeUpdate>("QueueTypeUpdate")
                 .enumerator<EventQueueType::QueueTypePaint>("QueueTypePaint")
+                .enumerator<EventQueueType::QueueTypeKeyboard>("QueueTypeKeyboard")
+                .enumerator<EventQueueType::QueueTypeMouseButton>("QueueTypeMouseButton")
+                .enumerator<EventQueueType::QueueTypeMouseMove>("QueueTypeMouseMove")
                 .enumerator<EventQueueType::QueueTypeEnd>("QueueTypeEnd");
 
         class_info<HowardBase>::inst_wrapper::set(new spd::class_info<HowardBase>(rt, "HowardBase"));
@@ -212,10 +206,14 @@ int main() {
         klass<QueueGlobalUpdate>().inherits<QueueGlobalEventBase>(global, argpack<>());
 
         // attempt of the relatively 'new' accessor interface of mozjs
+        // class EventQueueManager - Observers.hxx
         class_info<EventQueueManager>::inst_wrapper::set(new spd::class_info<EventQueueManager>(rt, "EventQueueManager"));
         klass<EventQueueManager>().define<>(global)
-                .accessor<QueueGlobalUpdate *, &EventQueueManager::updateQueue>("updateQueue")
-                .accessor<QueueGlobalPaint *, &EventQueueManager::paintQueue>("paintQueue")
+                .accessor<QueueGlobalUpdate *, &EventQueueManager::queueUpdate>("queueUpdate")
+                .accessor<QueueGlobalPaint *, &EventQueueManager::queuePaint>("queuePaint")
+                .accessor<QueueGlobalEventBase *, &EventQueueManager::queueKeyboard>("queueKeyboard")
+                .accessor<QueueGlobalEventBase *, &EventQueueManager::queueMouseButton>("queueMouseButton")
+                .accessor<QueueGlobalEventBase *, &EventQueueManager::queueMouseMove>("queueMouseMove")
                 .method<QueueGlobalEventBase *(EventQueueManager:: *)(unsigned int),
                     &EventQueueManager::queue> ("queue");
 
@@ -399,7 +397,7 @@ int main() {
     Howard::StannumSpriteNode *sprite = new Howard::StannumSpriteNode(&Howard::Foundation.rootNode(), texture);
     sprite->set_position({ 512, 256, 0 });
     sprite->attach_to({ &r });
-    Howard::Foundation.eventQueues().paintQueue()->add(sprite);
+    Howard::Foundation.eventQueues().queuePaint()->add(sprite);
 
     log("GLManager", L::Message) << "Context Initialized, entering loop (OpenGL " << glGetString(GL_VERSION) << ") ..." << rn;
 
@@ -407,11 +405,26 @@ int main() {
         // int width, height;
         // glfwGetFramebufferSize(window, &width, &height);
         // float ratio = width / (float) height;
+        using namespace xoundation;
+        using namespace Howard;
 
-        main_loop();
+        {
+            SpdRuntime& rt = Foundation.JSRuntime();
+            JS::PersistentRootedObject& global = Foundation.JSGlobal();
+            JSAutoRequest req(rt);
+            JSAutoCompartment at_comp(rt, global);
 
+            Foundation.eventQueues().queueUpdate()->invoke();
+
+            glfwPollEvents();
+        }
+
+        Transform::IsometricCamera::instance->update();
+        std::shared_ptr<Stannum::RenderQueue> queue(new Stannum::RenderQueue());
+        Foundation.eventQueues().queuePaint()->setRenderQueue(queue).invoke();
+
+        renderer.render_dispatch(queue);
         glfwSwapBuffers(window);
-        glfwPollEvents();
     }
 
     renderer.destroy();

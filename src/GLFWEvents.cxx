@@ -19,6 +19,12 @@
 #include "Misc/AtTheVeryBeginning.hxx"
 #include "Misc/Transform.hxx"
 
+#include "FacerCore/FacerEvent.hxx"
+#include "FacerCore/FacerEventPortGLFW.hxx"
+#include "Dwight/InputEvent.hxx"
+#include "Dwight/Foundation.hxx"
+#include "Dwight/Observers.hxx"
+
 void error_callback(int error, const char *desc) {
     printf("%s\n", desc); }
 
@@ -33,16 +39,22 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
             Howard::Transform::IsometricCamera::instance->pos += offset;
         }
     }
+
+    Facer::InputEvent e = Facer::Port::GLFW::createEventKey(window, key, scancode, action, mods);
+    std::shared_ptr<Howard::InputEvent> event(Howard::InputEvent::createShared(e));
+    Howard::Foundation.eventQueues().queueKeyboard()->dispatch_event(event);
 }
 
 void glfw_mousecb(GLFWwindow *window, int button, int action, int mods) {
-    if (action == GLFW_PRESS) {
-
-    }
+    Facer::InputEvent e = Facer::Port::GLFW::createEventMouseButton(window, button, action, mods);
+    std::shared_ptr<Howard::InputEvent> event(Howard::InputEvent::createShared(e));
+    Howard::Foundation.eventQueues().queueMouseButton()->dispatch_event(event);
 }
 
 void glfw_cursorcb(GLFWwindow *window, double x, double y) {
-
+    Facer::InputEvent e = Facer::Port::GLFW::createEventMouseMove(window, x, y);
+    std::shared_ptr<Howard::InputEvent> event(Howard::InputEvent::createShared(e));
+    Howard::Foundation.eventQueues().queueMouseMove()->dispatch_event(event);
 }
 
 void glfw_fbsizecb(GLFWwindow *window, int width, int height) {
