@@ -1,0 +1,13 @@
+{
+	"compilerOptions": {
+		"target": "ES5",
+		"charset": "utf-8",
+		// "noLib": true,
+		"emitBOM": false
+	},
+	"files": [
+		"FacerCore.d.ts",
+		"HOWARD.d.ts",	
+		"preload.ts"
+	]
+}

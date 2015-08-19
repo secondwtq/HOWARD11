@@ -15,20 +15,31 @@
 
 namespace Howard {
 
-constexpr const char Node::m_node_type[];
+constexpr const char HowardBase::m_class_name[];
+constexpr const char HNode::m_class_name[];
+constexpr const char Asset::m_class_name[];
+
+NodeManager *NodeManager::instance = nullptr;
+
+constexpr const char EventListenerBase::m_class_name[];
+constexpr const char EventListenerBase::m_listener_name[];
+
+constexpr const char HNode::m_node_type[];
+constexpr const char HNode::m_listener_name[];
 constexpr const char RootNode::m_node_type[];
 constexpr const char StannumSpriteNode::m_node_type[];
-constexpr const char ScriptNode::m_node_type[];
+constexpr const char ScriptNodeBase::m_node_type[];
 
-Node::Node(class RootNode *scene) : EventListener(this), RTTIID(scene->node_manager->allocate_site()) {
+HNode::HNode(class RootNode *scene) : EventListenerBase(this), RTTIID(scene->node_manager->allocate_site()) {
     scene->node_manager->init_site(this->RTTIID, this); }
 
-Node::~Node () {
-    if (!this->m_is_root)
+HNode::~HNode () {
+    if (this->node_typeid() != HowardNodeType::NRootNode)
         this->root()->node_manager->clear_site(this->RTTIID);
+    printf("Dwight - Node %u destructing ...\n", this->RTTIID);
 }
 
-RootNode *Node::root() {
+RootNode *HNode::root() {
     if (this->node_typeid() != HowardNodeType::NRootNode) {
         if (this->has_parent()) {
             return this->parent()->root();
@@ -40,28 +51,34 @@ RootNode *Node::root() {
         return reinterpret_cast<RootNode *>(this); }
 }
 
-void Node::invoke_event(Event::shared_ptr_t event)  {
+void HNode::invoke_event(HEvent::shared_ptr_t event)  {
     if (event->root() == nullptr) {
         event->set_root(this); }
 
     if (event->event_type() != EventType::EScriptEvent) {
+        this->onEvent(event);
+        if (event->stopped()) {
+            return; }
         auto listeners = this->m_listeners.find(event->event_type());
         if (listeners != this->m_listeners.end()) {
             for (auto listener : listeners->second) {
                 if (event->stopped()) {
                     return; }
                 if (listener->enabled()) {
-                    listener->on_event(event); }
+                    listener->onEvent(event); }
             }
         }
     } else {
+        this->onScriptEvent(std::static_pointer_cast<ScriptEventBase>(event));
+        if (event->stopped()) {
+            return; }
         auto listeners = this->m_script_listeners.find(event->event_type_ext());
         if (listeners != this->m_script_listeners.end()) {
             for (auto listener : listeners->second) {
                 if (event->stopped()) {
                     return; }
                 if (listener->enabled()) {
-                    listener->on_event(event); }
+                    listener->onScriptEvent(std::static_pointer_cast<ScriptEventBase>(event)); }
             }
         }
     }
@@ -73,7 +90,7 @@ void Node::invoke_event(Event::shared_ptr_t event)  {
     }
 }
 
-RootNode::RootNode() : Node(HAS_FOUNDATION) {
+RootNode::RootNode() : HNode(HAS_FOUNDATION) {
     // a trick, currently we do not allow multiple RootNodes
     //  due to the existence of Handle mechanism.
     this->node_manager = NodeManager::instance = new NodeManager();

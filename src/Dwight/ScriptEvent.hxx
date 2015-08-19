@@ -15,44 +15,59 @@
 #include "Event.hxx"
 #include "Node.hxx"
 
+#include <string>
 #include <memory>
 #include "../thirdpt/mozjs.hxx"
 
 namespace Howard {
 
-class ScriptEventBase final : public Event {
+class ScriptEventBase final : public HEvent {
 
 public:
     typedef std::shared_ptr<ScriptEventBase> shared_ptr_t;
 
-    ScriptEventBase(xoundation::spd::context_reference context) :
-            scriptObject(context) { }
+    ScriptEventBase(EventTypeExt type, xoundation::spd::context_reference context) :
+            scriptObject(context), m_type_ext(type) { }
 
-    EventType event_type() const override { return EventType::EScriptEvent; }
-    EventTypeExt event_type_ext() const override { return this->m_type_ext; }
+    EventType event_type() const override {
+        return EventType::EScriptEvent; }
+    EventTypeExt event_type_ext() const override {
+        return this->m_type_ext; }
 
     JS::PersistentRootedValue scriptObject;
 
 private:
-
     EventTypeExt m_type_ext = static_cast<EventTypeExt>(EventType::EEnd) + 1;
 };
 
-class EventListenerScript final : public EventListener {
+class EventListenerScriptBase final : public EventListenerBase {
 public:
-    EventListenerScript(Node *parent) :
-            EventListenerScript(parent, DEFAULT_PRIORITY) { }
+    EventListenerScriptBase(HNode *parent, const std::string& name, xoundation::spd::context_reference context) :
+            EventListenerScriptBase(parent, name, DEFAULT_PRIORITY, context) { }
+    EventListenerScriptBase(HNode *parent, const std::string& name, int priority, xoundation::spd::context_reference context) :
+            EventListenerBase(parent, priority), scriptObject(context), m_name(name), m_context(context) { }
 
-    EventListenerScript(Node *parent, int priority) :
-            EventListener(parent, priority) { }
+    const char *listenerName() const override {
+        return m_name.c_str(); }
 
-    virtual void on_event(Event::shared_ptr_t event) override {
+    void onEvent(HEvent::shared_ptr_t event) override;
+    void onScriptEvent(ScriptEventBase::shared_ptr_t event) override;
 
-    }
+    JS::PersistentRootedObject scriptObject;
 
 private:
 
-    // JS::PersistentRootedFunction m_callback;
+    std::string m_name;
+    JSContext *m_context;
+};
+
+struct EventListenerScriptData {
+    EventListenerScriptData(std::shared_ptr<EventListenerScriptBase> listener)
+            : m_listener(listener) { }
+    std::shared_ptr<EventListenerScriptBase> get_listener() {
+        return m_listener.lock(); }
+private:
+    std::weak_ptr<EventListenerScriptBase> m_listener;
 };
 
 }

@@ -21,29 +21,71 @@
 
 namespace Howard {
 
-class Node;
-class EventListener;
-class Event;
+class HNode;
+class EventListenerBase;
+class HEvent;
 class ScriptEvent;
 
-class EventQueueGlobal : public HowardBase {
+enum EventQueueType {
+    QueueTypeGlobalEventBase,
+    QueueTypeGlobalEventBaseMapped,
+    QueueTypeUpdate,
+    QueueTypePaint,
+    QueueTypeEnd
+};
+
+class QueueGlobalEventBase : public HowardBase {
 public:
 
     HowardRTTIType WhatAmI() const override { return HowardRTTIType::TEventQueueGlobal; }
+    const char *class_name() const override { return QueueGlobalEventBase::m_class_name; }
+    virtual const char *queue_name() const { return QueueGlobalEventBase::m_queue_name; }
+    virtual EventQueueType queue_type() const { return EventQueueType::QueueTypeGlobalEventBase; }
+    static constexpr const char m_class_name[] = "QueueGlobalEventBase";
+    static constexpr const char m_queue_name[] = "GlobalEventBase";
 
-    const char *class_name() const override { return EventQueueGlobal::m_class_name; }
+    virtual ~QueueGlobalEventBase() { }
 
-    virtual const char *queue_name() const { return EventQueueGlobal::m_queue_name; }
+    // again, for the JS
+    virtual bool inside(HNode *node) const { return false; };
+    virtual bool add(HNode *node) { return false; };
+    virtual bool remove(HNode *node) { return false; };
 
-    static constexpr const char m_class_name[] = "EventQueueGlobal";
-    static constexpr const char m_queue_name[] = "QueueBase";
+    void invoke() {
+        this->will_invoke();
+        this->_invoke();
+        this->did_invoke();
+    }
 
-    bool inside(Node *node) const {
+    virtual void will_invoke() { }
+    virtual void did_invoke() { }
+
+    virtual bool enabled(HNode *node) const { return false; };
+    virtual bool disable(HNode *node) { return false; };
+    virtual bool enable(HNode *node) { return false; };
+
+protected:
+
+    virtual void _invoke() { return; };
+    virtual void invoke_per_node(HNode *node) { return; };
+};
+
+class QueueGlobalEventBaseMapped : public QueueGlobalEventBase {
+public:
+
+    HowardRTTIType WhatAmI() const override { return HowardRTTIType::TEventQueueGlobal; }
+    const char *class_name() const override { return QueueGlobalEventBaseMapped::m_class_name; }
+    const char *queue_name() const override { return QueueGlobalEventBaseMapped::m_queue_name; }
+    EventQueueType queue_type() const override { return EventQueueType::QueueTypeGlobalEventBaseMapped; }
+    static constexpr const char m_class_name[] = "QueueGlobalEventBaseMapped";
+    static constexpr const char m_queue_name[] = "GlobalEventBaseMapped";
+
+    bool inside(HNode *node) const override {
         auto i = m_nodes.find(node);
         return (i != m_nodes.end());
     }
 
-    bool add(Node *node) {
+    bool add(HNode *node) override {
         ASSERT(node);
         auto i = m_nodes.find(node);
         if (i == m_nodes.end()) {
@@ -53,7 +95,7 @@ public:
         return false;
     }
 
-    bool remove(Node *node) {
+    bool remove(HNode *node) override {
         ASSERT(node);
         auto i = m_nodes.find(node);
         if (i != m_nodes.end()) {
@@ -63,15 +105,7 @@ public:
         return false;
     }
 
-    void invoke() {
-        for (auto n : m_nodes) {
-            if (n.second) {
-                this->invoke_per_node(n.first);
-            }
-        }
-    }
-
-    bool enabled(Node *node) const {
+    bool enabled(HNode *node) const override {
         ASSERT(node);
         auto i = m_nodes.find(node);
         if (i != m_nodes.end()) {
@@ -80,7 +114,7 @@ public:
         return false;
     }
 
-    bool disable(Node *node) {
+    bool disable(HNode *node) override {
         ASSERT(node);
         auto i = m_nodes.find(node);
         if (i != m_nodes.end()) {
@@ -90,7 +124,7 @@ public:
         return false;
     }
 
-    bool enable(Node *node) {
+    bool enable(HNode *node) override {
         ASSERT(node);
         auto i = m_nodes.find(node);
         if (i != m_nodes.end()) {
@@ -100,11 +134,72 @@ public:
         return false;
     }
 
-    virtual void invoke_per_node(Node *node) { }
+private:
+
+    void _invoke() override {
+        for (auto n : m_nodes) {
+            if (n.second) {
+                this->invoke_per_node(n.first);
+            }
+        }
+    }
+
+    std::map<HNode *, bool> m_nodes;
+};
+
+namespace Utility {
+
+class InitializeOnlyOnce {
+public:
+    inline void initializeOnce() {
+        ASSERT(!m_inited);
+        m_inited = true;
+    }
+
+private:
+    bool m_inited = false;
+};
+
+template <typename T>
+class InitializeGlobalOnlyOnce {
+public:
+    inline void initializeOnce() {
+        ASSERT(!inited);
+        inited = true;
+    }
+
+private:
+    static bool inited;
+};
+
+template <typename T>
+bool InitializeGlobalOnlyOnce<T>::inited = false;
+
+}
+
+class QueueGlobalUpdate;
+class QueueGlobalPaint;
+
+class EventQueueManager {
+public:
+
+    void initialize();
+
+    QueueGlobalEventBase *queue(EventQueueType type);
+    QueueGlobalEventBase *queue(unsigned int qid);
+
+    inline QueueGlobalUpdate *updateQueue() {
+        return m_qupdate; }
+    inline QueueGlobalPaint *paintQueue(){
+        return m_qpaint; }
 
 private:
 
-    std::map<Node *, bool> m_nodes;
+    Utility::InitializeGlobalOnlyOnce<EventQueueManager> m_init;
+    QueueGlobalUpdate *m_qupdate;
+    QueueGlobalPaint *m_qpaint;
+
+    std::unordered_map<unsigned int, QueueGlobalEventBase *> m_queues;
 };
 
 class EventNotificationGlobal : public HowardBase {

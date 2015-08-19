@@ -22,6 +22,7 @@
 #include "StannumTexture.hxx"
 
 #include <stdlib.h>
+#include <memory>
 
 namespace Howard {
 namespace Stannum {
@@ -146,6 +147,11 @@ class RenderQueue {
 
     public:
 
+    ~RenderQueue() {
+        // RenderQueue must be cleared
+        ASSERT(commands.empty());
+    }
+
     void push(StannumCommand *command) {
         commands.push_back(command); }
 
@@ -166,12 +172,14 @@ class StannumRenderer {
 
     void destroy();
 
-    void render_dispatch(RenderQueue& queue) {
+    void render_dispatch(std::shared_ptr<RenderQueue> queue) {
+        ASSERT(queue != nullptr);
+
         Verdandi::clear_depth();
         glClear(GL_COLOR_BUFFER_BIT);
-        for (auto cmd : queue.commands) {
+        for (auto cmd : queue->commands) {
             cmd->execute(this); }
-        queue.clear();
+        queue->clear();
         m_shared_vb.clear();
     }
 

@@ -23,12 +23,12 @@
 namespace Howard {
 
 // 150530: SpriteNode works.
-class StannumSpriteNode : public Node {
+class StannumSpriteNode : public HNode {
 
 public:
 
     StannumSpriteNode (class RootNode *scene, Verdandi::Texture *texture)
-            : Node(scene), camera(Transform::IsometricCamera::instance) {
+            : HNode(scene), camera(Transform::IsometricCamera::instance) {
         m_data.set_texture_and_pos(texture, { 0, 0 }); }
 
     static StannumSpriteNode *create(RootNode *scene, Verdandi::Texture *texture) {
@@ -40,7 +40,7 @@ public:
     void set_position(const HCoord& pos) {
         this->m_position = pos; }
 
-    void on_paint(Stannum::RenderQueue *queue) override {
+    void onPaint(Stannum::RenderQueue *queue) override {
         m_data.set_position({ Transform::view_pos(m_position, camera) });
         queue->push(new Stannum::CommandSprite(&m_data)); }
 

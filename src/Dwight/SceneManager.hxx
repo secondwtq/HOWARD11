@@ -19,7 +19,7 @@
 
 namespace Howard {
 
-class NodeManager : public HandleManager<Node> {
+class NodeManager : public HandleManager<HNode> {
 
     public:
     static NodeManager *instance;
@@ -29,7 +29,6 @@ class NodeManager : public HandleManager<Node> {
 class AssetManager : public HandleManager<Asset> {
 
     public:
-    static AssetManager *instance;
 
     bool already_has(const char *name) {
         return (this->m_namemap.find(name) != m_namemap.end()); }

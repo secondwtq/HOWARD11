@@ -12,8 +12,9 @@
 #include "Asset.hxx"
 
 #include "FSM/FSMHelper.hxx"
-
 #include "Dwight/SceneManager.hxx"
+
+#include "Dwight/Foundation.hxx"
 
 namespace Howard {
 
@@ -22,13 +23,13 @@ using namespace FSMHelper;
 constexpr const char Asset::m_asset_type[];
 
 Asset::Asset(const char *name) : m_name(name) {
-    if (AssetManager::instance->already_has(name)) {
+    if (Foundation.assetManager().already_has(name)) {
         log("AssetMangaer", Error) << "Asset name duplicate: [" << name << "], " <<
-                this->asset_type() << " & " << AssetManager::instance->named(name)->asset_type()
+                this->asset_type() << " & " << Foundation.assetManager().named(name)->asset_type()
                 << rn;
     } else {
-        this->AssetID = AssetManager::instance->allocate_site();
-        AssetManager::instance->init_site(this->AssetID, name, this);
+        this->AssetID = Foundation.assetManager().allocate_site();
+        Foundation.assetManager().init_site(this->AssetID, name, this);
     }
 }
 

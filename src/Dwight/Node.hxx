@@ -29,7 +29,6 @@
 
 #include <xoundation/spde.hxx>
 
-#include "HandleE.hxx"
 #include "../Misc/hash_fix.hxx"
 
 namespace Howard {
@@ -43,13 +42,15 @@ enum HowardNodeType {
 
 };
 
-class Node;
+class HNode;
 class RootNode;
 namespace Stannum {
     class RenderQueue; }
 
-class EventListener;
-class EventListenerScript;
+class EventListenerBase;
+class EventListenerScriptBase;
+
+class ScriptEventBase;
 
 //
 // We'll guarantee several things for Howard::Event(s):
@@ -61,18 +62,23 @@ class EventListenerScript;
 //
 //  * the order of listeners of the same event and the same priority
 //
-class EventListener {
+class EventListenerBase : public HowardBase,
+        std::enable_shared_from_this<EventListenerBase> {
 public:
 
     static constexpr const int DEFAULT_PRIORITY = 64;
 
-    EventListener(Node *parent) :
-            EventListener(parent, DEFAULT_PRIORITY) { }
-
-    EventListener(Node *parent, int priority) :
+    EventListenerBase(HNode *parent) :
+            EventListenerBase(parent, DEFAULT_PRIORITY) { }
+    EventListenerBase(HNode *parent, int priority) :
             m_priority(priority), m_parent(parent) { }
+    virtual ~EventListenerBase() { }
 
-    virtual ~EventListener() { }
+    HowardRTTIType WhatAmI() const override { return HowardRTTIType::TEventListener; }
+    const char *class_name() const override { return EventListenerBase::m_class_name; }
+    virtual const char *listenerName() const { return EventListenerBase::m_listener_name; }
+    static constexpr const char m_class_name[] = "EventListenerBase";
+    static constexpr const char m_listener_name[] = "EventListenerBase";
 
     bool enabled() const { return this->m_enabled; }
     void set_enabled(bool enabled) { this->m_enabled = enabled; }
@@ -80,46 +86,81 @@ public:
     void disable() { this->set_enabled(false); }
 
     // it should not exist, but for the script ...
-    void set_listener_priority(int priority) { this->m_priority = priority; }
-    int listener_priority() const { return m_priority; }
-    Node *listener_parent() { return this->m_parent; }
+    void setPriority(int priority) { this->m_priority = priority; }
+    int priority() const { return m_priority; }
+    HNode *listenerParent() { return this->m_parent; }
 
     struct compare_ptr_priority {
-        bool operator () (const EventListener * lhs, const EventListener * rhs) const {
-            return (lhs->listener_priority()) < (rhs->listener_priority()); }
+        bool operator () (const std::shared_ptr<EventListenerBase> lhs,
+                const std::shared_ptr<EventListenerBase> rhs) const {
+            return (lhs->priority()) < (rhs->priority()); }
     };
 
-    virtual void on_event(Event::shared_ptr_t event) { }
+    // TODO: should be abstract, but we provide an empty
+    //  impl temporarily since mozjs needs its ctor avaliable
+    virtual void onEvent(std::shared_ptr<HEvent> event) { }
+    // given that ScriptEvent would be used muuuch more than other types
+    //  and is more flexible, also requires extra cost for casting,
+    //  we should add dedicated interfaces for ScriptEvent
+    //  (we have already treat it as a special case
+    //      inside the event dispatching code in Node)
+    virtual void onScriptEvent(std::shared_ptr<ScriptEventBase> event) { }
+
+protected:
+    template <typename DowncastT>
+    inline std::shared_ptr<DowncastT> get_shared() {
+        return std::static_pointer_cast<DowncastT>(shared_from_this()); }
 
 private:
-
     bool m_enabled = true;
     int m_priority = DEFAULT_PRIORITY;
-    Node *m_parent = nullptr;
+
+    friend class HNode;
+    void set_listener_parent(HNode *parent) {
+        this->m_parent = nullptr; }
+    HNode *m_parent = nullptr;
+
+    // motivation:
+    // today we changed the lifetime of EventListener (not the Node, which
+    //  is directly derived from EventListener) to shared, originally we
+    //  implicitly destruct it in Node::removeListener(). we want listeners
+    //  decoupled from it's parent Nodes as much as possible.
+    //
+    // however, for the mozjs binding, we need to create a shared caster
+    //  object when calling the event callbacks, for which we need to
+    //  access the shared_ptr used to access 'this'.
+    // STL <memory> provides std::enable_shared_from_this<T>, which
+    //  can achieve the same functionality, and basically implemented
+    //  with similar principle, but much more clear and safe, since
+    //  it's just inside std::shared_ptr<T>.
+    // ref: stackoverflow.com/questions/11711034/stdshared-ptr-of-this
+    //
+    // std::weak_ptr<EventListenerBase> shared_this;
 };
 
-class Node : public EventListener, public xoundation::spd::intrusive_object<Node> {
-
+class HNode : public EventListenerBase,
+             public xoundation::spd::intrusive_object<HNode> {
     public:
 
-    Node (class RootNode *scene);
+    HNode (class RootNode *scene);
     // Node (Node *scene) : Node(*scene) { };
-    ~Node();
+    ~HNode();
 
-    Node (const Node&) = delete;
-    Node& operator = (const Node&) = delete;
+    HNode (const HNode&) = delete;
+    HNode& operator = (const HNode&) = delete;
 
-    static Node *create(RootNode *scene) { return new Node(scene); }
+    static HNode *create(RootNode *scene) { return new HNode(scene); }
 
-    HowardRTTIType WhatAmI() const { return HowardRTTIType::TNode; }
-    const char *class_name() const { return Node::m_class_name; }
-
+    HowardRTTIType WhatAmI() const override { return HowardRTTIType::TNode; }
+    const char *class_name() const override { return HNode::m_class_name; }
+    const char *listenerName() const override { return HNode::m_listener_name; }
     // for ScriptNode, typeid is always NodeType::ScriptNode,
     //  but node_type is specified in Script.
     virtual HowardNodeType node_typeid() const { return HowardNodeType::NFoundation; };
-    virtual const char *node_type() const { return Node::m_node_type; }
+    virtual const char *node_type() const { return HNode::m_node_type; }
 
-    static constexpr const char m_class_name[] = "Node";
+    static constexpr const char m_class_name[] = "HNode";
+    static constexpr const char m_listener_name[] = "NodeListener";
     static constexpr const char m_node_type[] = "Foundation";
 
     int RTTIID = HO_HANDLE_NULL;
@@ -134,16 +175,19 @@ class Node : public EventListener, public xoundation::spd::intrusive_object<Node
     virtual void on_enter() { }
     virtual void on_exit() { }
 
-    // ATTENTION: this function is to be called
-    //  in the Stannum thread and thus not to be overloaded
+    // ATTENTION: this function is to be called in the
+    //  Stannum thread, and thus not to be overloaded
     //  by ScriptNode, it's used by Stannum nodes only.
-    virtual void on_paint(Stannum::RenderQueue *queue) { }
-    virtual void on_update() { }
+    virtual void onPaint(Stannum::RenderQueue *queue) { }
+    virtual void onUpdate() { }
 
-    Node *parent() {
+    void onEvent(HEvent::shared_ptr_t event) override { }
+    void onScriptEvent(std::shared_ptr<ScriptEventBase> event) override { }
+
+    HNode *parent() {
         return this->m_parent; }
 
-    bool has_child(Node *child) const {
+    bool has_child(HNode *child) const {
         for (auto handle : m_children)
             if (handle == child)
                 return true;
@@ -153,7 +197,7 @@ class Node : public EventListener, public xoundation::spd::intrusive_object<Node
     bool has_parent() const {
         return (this->m_parent != nullptr); }
 
-    void add_child(Node *child) {
+    void add_child(HNode *child) {
         if (!this->has_child(child)) {
             child->set_parent(this);
             this->m_children.push_back(child);
@@ -162,7 +206,7 @@ class Node : public EventListener, public xoundation::spd::intrusive_object<Node
         }
     }
 
-    void detach_child(Node *child) {
+    void detach_child(HNode *child) {
         ssize_t idx = HO_INVALIDX;
         for (size_t i = 0; i < m_children.size(); i++) {
             if (m_children[i] == child) {
@@ -181,7 +225,7 @@ class Node : public EventListener, public xoundation::spd::intrusive_object<Node
 
     // if the Node already has a parent
     //  you must detach first, then attach to another
-    void attach_to(Node *parent) {
+    void attach_to(HNode *parent) {
         ASSERT(!this->has_parent());
         if (!this->has_parent()) {
             parent->add_child(this); }
@@ -195,45 +239,41 @@ class Node : public EventListener, public xoundation::spd::intrusive_object<Node
 
     RootNode *root();
 
-    void on_paint_(Stannum::RenderQueue *queue) {
-        for (auto ch : m_children) {
-            ch->on_paint_(queue); }
-        this->on_paint(queue);
-    }
-
-    void on_update_() {
-        this->on_update();
-        for (auto ch : m_children) {
-            ch->on_update_(); }
-    }
-
-    EventListener *add_listener(EventType type, EventListener *listener) {
+    std::shared_ptr<EventListenerBase> addListener(EventType type, std::shared_ptr<EventListenerBase> listener) {
         ASSERT(type != EventType::EScriptEvent);
-        ASSERT(listener->listener_parent() == this);
+        if (!listener->listenerParent()) {
+            listener->m_parent = this; }
+        ASSERT(listener->listenerParent() == this);
 
         this->m_listeners[type].insert(listener);
         return listener;
     }
 
-    EventListener *add_listener(EventType type, EventTypeExt typext, EventListener *listener) {
-        ASSERT(listener->listener_parent() == this);
+    std::shared_ptr<EventListenerBase> addListener(EventType type,
+            EventTypeExt typext,std::shared_ptr<EventListenerBase>
+    listener) {
+        if (!listener->listenerParent()) {
+            listener->m_parent = this; }
+        ASSERT(listener->listenerParent() == this);
 
         if (type != EventType::EScriptEvent) {
-            this->m_listeners[type].insert(listener);
-        } else {
-            this->m_script_listeners[typext].insert(listener);
-        }
+            m_listeners[type].insert(listener);
+        } else { m_script_listeners[typext].insert(listener); }
         return listener;
     }
 
-    EventListener *add_script_listener(EventTypeExt typext, EventListener *listener) {
-        ASSERT(listener->listener_parent() == this);
+    std::shared_ptr<EventListenerBase> addScriptListener(EventTypeExt typext,
+            std::shared_ptr<EventListenerBase> listener) {
+        if (!listener->listenerParent()) {
+            listener->m_parent = this; }
+        ASSERT(listener->listenerParent() == this);
 
-        this->m_script_listeners[typext].insert(listener);
+        m_script_listeners[typext].insert(listener);
         return listener;
     }
 
-    bool remove_listener(EventType type, const EventListener *listener) {
+    // TODO: removeListener() for ScriptEvent
+    bool removeListener(EventType type, const std::shared_ptr<EventListenerBase> listener) {
         ASSERT(listener);
 
         auto listeners_i = this->m_listeners.find(type);
@@ -241,8 +281,9 @@ class Node : public EventListener, public xoundation::spd::intrusive_object<Node
             auto listeners = listeners_i->second;
             for (auto i = listeners.begin(); i != listeners.end(); ++i) {
                 if (*i == listener) {
+                    (*i)->set_listener_parent(nullptr);
                     listeners.erase(i);
-                    delete listener;
+                    // delete listener;
                     return true;
                 }
             }
@@ -251,24 +292,28 @@ class Node : public EventListener, public xoundation::spd::intrusive_object<Node
         return false;
     }
 
-    void invoke_event(Event::shared_ptr_t event);
+    void invoke_event(HEvent::shared_ptr_t event);
 
 // that's only for RootNode
 protected:
-    Node(bool any_found) : EventListener(this), m_is_root(true) { }
+    HNode(bool any_found) : EventListenerBase(this) { }
 
 private:
 
-    Node *m_parent = nullptr;
-    std::vector<Node *> m_children;
-    bool m_is_root = false;
+    HNode *m_parent = nullptr;
+    std::vector<HNode *> m_children;
 
-    std::unordered_map<EventType, std::set<EventListener *, EventListener::compare_ptr_priority>,
+    std::unordered_map<EventType,
+            std::set<std::shared_ptr<EventListenerBase>,
+            EventListenerBase::compare_ptr_priority>,
             enum_hash<EventType>> m_listeners;
-    std::unordered_map<EventTypeExt, std::set<EventListener *, EventListener::compare_ptr_priority>>
+    std::unordered_map<EventTypeExt,
+            std::set<std::shared_ptr<EventListenerBase>,
+            EventListenerBase::compare_ptr_priority>>
             m_script_listeners;
 
 private:
+
     void on_enter_() {
         this->on_enter();
         for (auto ch : m_children) {
@@ -281,14 +326,11 @@ private:
         this->on_exit();
     }
 
-    void set_parent(Node *parent) {
+    void set_parent(HNode *parent) {
         assert(!this->parent());
         this->m_parent = parent; }
-
 };
 
 }
-
-#include "RootNode.hxx"
 
 #endif // HOWARD11_NODE_HXX

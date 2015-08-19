@@ -102,6 +102,12 @@ template <typename T, typename ContainerT>
 inline bool operator == (const Handle<T, ContainerT>& lhs, const Handle<T, ContainerT>& rhs) {
     return lhs.id() == rhs.id(); }
 
+// originally 'HandleE.hxx'
+class NodeManager;
+
+template <typename T>
+using HandleObj = Handle<T, NodeManager>;
+
 }
 
 

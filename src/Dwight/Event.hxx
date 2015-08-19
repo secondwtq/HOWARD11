@@ -16,43 +16,45 @@
 
 namespace Howard {
 
-class Node;
+class HNode;
 
 enum EventType {
     ENone,
     EFoundation,
+    EInputEvent,
     EScriptEvent,
     EEnd
 };
 
 typedef int EventTypeExt;
 
-class Event {
+class HEvent {
 
 public:
-    typedef std::shared_ptr<Event> shared_ptr_t;
+    typedef std::shared_ptr<HEvent> shared_ptr_t;
 
-    static inline shared_ptr_t create_shared() { return std::make_shared<Event>(); }
-
-    virtual ~Event() { }
+    // ATTENTION: you should not make this
+    //  (as a foundation class) directly instantiatable
+    static inline shared_ptr_t createShared() { return std::make_shared<HEvent>(); }
+    virtual ~HEvent() { }
 
     virtual EventType event_type() const { return EFoundation; }
     virtual EventTypeExt event_type_ext() const { return EventType::EFoundation; }
 
-    Node *source() const { return this->m_source; }
-    void set_source(Node *source) { this->m_source = source; }
+    HNode *source() const { return this->m_source; }
+    void set_source(HNode *source) { this->m_source = source; }
 
     // indicates the node it starts propagation
-    Node *root() const { return this->m_root; }
-    void set_root(Node *root) { this->m_root = root; }
+    HNode *root() const { return this->m_root; }
+    void set_root(HNode *root) { this->m_root = root; }
 
     void stop_propagation() { this->m_stopped = true; }
     bool stopped() const { return this->m_stopped; }
 
 private:
 
-    Node *m_source = nullptr;
-    Node *m_root = nullptr;
+    HNode *m_source = nullptr;
+    HNode *m_root = nullptr;
     bool m_stopped = false;
 };
 

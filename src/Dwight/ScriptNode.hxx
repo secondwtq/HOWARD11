@@ -14,35 +14,37 @@
 
 #include "Common.hxx"
 #include "Node.hxx"
-#include "HandleE.hxx"
 
 #include "../thirdpt/mozjs.hxx"
+#include "ScriptEvent.hxx"
 
 namespace Howard {
 
 // be 'final', sure?
-class ScriptNode final : public Node {
+class ScriptNodeBase final : public HNode {
 
 public:
 
-    ScriptNode (RootNode *scene, xoundation::spd::context_reference context) :
-            Node(scene), data(context) { }
-    ScriptNode (HandleObj<Node> scene, xoundation::spd::context_reference context) :
-            Node(scene), data(context) { }
+    ScriptNodeBase (RootNode *scene, xoundation::spd::context_reference context) :
+            HNode(scene), m_scriptctx(context) { printf("ScriptNode constructing ..."); }
+    ScriptNodeBase (HandleObj<HNode> scene, xoundation::spd::context_reference context) :
+            HNode(scene), m_scriptctx(context) { }
 
-    static ScriptNode *create(RootNode *scene, xoundation::spd::context_reference context) {
-        return new ScriptNode(scene, context); }
+    static ScriptNodeBase *create(RootNode *scene, xoundation::spd::context_reference context) {
+        return new ScriptNodeBase(scene, context); }
 
-    HowardNodeType node_typeid() const override { return HowardNodeType::NScriptNode; }
-    const char *node_type() const override { return ScriptNode::m_node_type; }
-
+    HowardNodeType node_typeid() const override {
+        return HowardNodeType::NScriptNode; }
+    const char *node_type() const override {
+        return ScriptNodeBase::m_node_type; }
     static constexpr const char m_node_type[] = "ScriptNode";
 
-    virtual void on_update() override { }
-    virtual void on_event(Event::shared_ptr_t event) override { }
+    void onUpdate() override;
+    void onEvent(HEvent::shared_ptr_t event) override;
+    void onScriptEvent(ScriptEventBase::shared_ptr_t event) override;
 
-    JS::PersistentRootedValue data;
-
+private:
+    JSContext *m_scriptctx;
 };
 
 }

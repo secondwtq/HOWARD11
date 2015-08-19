@@ -13,7 +13,7 @@
 #define HOWARD11_COMMON_HXX
 
 #include <stddef.h>
-#include <cstdint>
+#include <stdint.h>
 
 namespace Howard {
 
@@ -21,11 +21,13 @@ typedef uint8_t RawDataT;
 
 enum HowardRTTIType {
     TBase = 0,
-    TNode = 1,
-    THandle = 2,
-    TAsset = 3,
-    TEventQueueGlobal = 4,
-    TEventNotificationCenter = 5
+    TEventListener = 1,
+    TNode = 2,
+    THandle = 3,
+    TAsset = 4,
+    TEventQueueGlobalBase = 5,
+    TEventQueueGlobal = 6,
+    TEventNotificationCenter = 7
 };
 
 }
@@ -42,11 +44,5 @@ enum HowardRTTIType {
 
 using HCoord = glm::i32vec3;
 using HPoint = glm::i16vec2;
-
-namespace xoundation {
-class SpdRuntime;
-}
-
-extern xoundation::SpdRuntime *jsruntime;
 
 #endif // HOWARD11_COMMON_HXX
