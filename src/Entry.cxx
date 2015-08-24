@@ -149,7 +149,8 @@ int main() {
         class_info<Verdandi::Texture>::inst_wrapper::set(
                 new spd::class_info<Verdandi::Texture>(rt, "Texture"));
         klass<Verdandi::Texture>().inherits<Asset>(global, spd::argpack<const std::string&, Verdandi::TextureImage *>())
-                .static_func<SPD_DEF(Verdandi::Texture::createWithEntireImage)>("createWithEntireImage");
+                .static_func<SPD_DEF(Verdandi::Texture::createWithEntireImage)>("createWithEntireImage")
+                .static_func<SPD_DEF(Verdandi::Texture::createWithPartialImage)>("createWithPartialImage");
 
         class_info<EventListenerBase>::inst_wrapper::set(new
                 class_info<EventListenerBase>(rt, "EventListenerBase"));
@@ -444,6 +445,11 @@ int main() {
         klass<HPoint>().define(global)
                 .property<short, &HPoint::x>("x")
                 .property<short, &HPoint::y>("y");
+
+        class_info<HPixel>::inst_wrapper::set(new spd::class_info<HPixel>(rt, "HPixel"));
+        klass<HPixel>().define(global, argpack<unsigned short, unsigned short>())
+                .property<unsigned short, &HPixel::x>("x")
+                .property<unsigned short, &HPixel::y>("y");
     }
 
     Howard::Foundation.setRootNode(new Howard::RootNode());
@@ -497,11 +503,18 @@ int main() {
     renderer.init();
 
     Howard::Verdandi::TextureImage *textureimage = new Howard::Verdandi::TextureImage("node");
+    Howard::Verdandi::TextureImage *textureimage_TestUnit = new Howard::Verdandi::TextureImage("TestUnit");
     {
         Howard::Verdandi::Image image_t("load");
         std::string buf = readfile("assets/buildingbody.png");
         image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length());
-        textureimage->load(image_t);
+        textureimage->loadFromImage(image_t);
+    }
+    {
+        Howard::Verdandi::Image image_t("TestUnitImage");
+        std::string buf = readfile("assets/TestUnit.png");
+        image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length());
+        textureimage_TestUnit->loadFromImage(image_t);
     }
     texture = new Howard::Verdandi::Texture("node_tex", textureimage, { 133, 154 }, { 80, 71 });
 

@@ -38,10 +38,6 @@ declare enum EventQueueType {
 	QueueTypeEnd
 }
 
-declare function print(... args: any[]) : void;
-declare function collectgarbage(): void;
-declare function cast<From, To>(org: From, proto: { new (... _args): To }): To;
-
 declare class HCoord {
 
 	constructor(x: number, y: number, z: number);
@@ -55,6 +51,14 @@ declare class HPoint {
 
 	constructor(x: number, y: number);
 
+	x: number;
+	y: number;
+}
+
+declare class HPixel {
+	
+	constructor(x: number, y: number);
+	
 	x: number;
 	y: number;
 }
@@ -100,6 +104,8 @@ declare class TextureImage extends Asset {
 
 declare class Texture extends Asset {
 	static createWithEntireImage(name: string, parent: TextureImage): Texture;
+	static createWithPartialImage(name: string, parent: TextureImage,
+		position: HPixel, size: HPixel): Texture;
 }
 
 declare class HEvent {
@@ -275,19 +281,6 @@ declare class StannumSpriteNode extends HNodeImpl {
 	set_position(pos: HAnyCoord): void;
 }
 
-declare class HammerFoundation {
-	initialize();
-	defaultMaterial: HammerMaterial;
-}
-
-declare class HammerSceneCreateArgs {
-	
-}
-
-declare class HammerScene {
-	initialize(foundation: HammerFoundation, args: HammerSceneCreateArgs);
-}
-
 declare class Transform {
 	position: HAnyCoord;
 	rotation: HQuaternion;
@@ -296,46 +289,4 @@ declare class Transform {
 	static createDefault(): Transform;
 	static createPositioned(position: HAnyCoord): Transform;
 	static createRotated(rotation: HQuaternion): Transform;
-}
-
-declare enum HammerPrimitiveType {
-	PNone,
-	PSphere,
-	PBox,
-	PCapsule,
-	PEnd
-}
-
-declare class HammerMaterial {
-	constructor(foundation: HammerFoundation,
-		staticF: number, dynamicF: number, restitution: number);
-}
-
-declare class HammerPrimitiveBody {
-	constructor(material: HammerMaterial);
-	
-	addSphere(transform: Transform, radius: number);
-	addBox(transform: Transform, halfExtends: HAnyCoord);
-	addCapsule(transform: Transform, radius: number, halfLength: number);
-}
-
-declare class HammerPrimitiveHelper {
-	static attachPrimitivesToActor(body: HammerPrimitiveBody, node: HammerActorNode);
-}
-
-declare class HammerTransformEvent extends HEvent {
-	transform: Transform;
-}
-
-declare class HammerActorNode extends HNodeImpl {
-	constructor(scene: RootNode, transform: Transform);
-	
-	mass: number;
-	invMass: number;
-	
-	addToScene(scene: HammerScene);
-	addForce(force: HAnyCoord);
-	addImpulse(impulse: HAnyCoord);
-	addAcceleration(acc: HAnyCoord);
-	setVelocity(velocity: HAnyCoord);
 }

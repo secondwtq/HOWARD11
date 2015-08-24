@@ -19,6 +19,10 @@
 namespace Howard {
 namespace Hammer {
 
+enum ConstructInternal {
+    CONSTRUCT_INTERNAL
+};
+
 class HammerActorNode : public HNode {
 public:
 
@@ -36,15 +40,28 @@ public:
     void addAcceleration(const HAnyCoord& acc);
 
     void setVelocity(const HAnyCoord& velocity);
+    void setKinematicTarget(const Transform& transform);
+    void setTransform(const Transform& transform);
+
+    bool kinematic() const;
+    // donot need it
+    bool dynamic() const;
+
+    void setKinematic();
+    void setDynamic();
 
     float mass() const;
     float invMass() const;
+
+protected:
+
+    HammerActorNode(RootNode *scene, const Transform& transform, ConstructInternal);
+    physx::PxRigidDynamic *m_actor;
 
 private:
 
     friend class HammerScene;
     Transform m_transform;
-    physx::PxRigidDynamic *m_actor;
 
 };
 
@@ -61,6 +78,11 @@ public:
 
     Transform transform;
 
+};
+
+class HammerCCTBoxNode : public HammerActorNode {
+public:
+    HammerCCTBoxNode(RootNode *scene, const Transform& transform, const HAnyCoord& extents);
 };
 
 }

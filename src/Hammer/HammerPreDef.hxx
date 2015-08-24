@@ -18,6 +18,7 @@ class PxCooking;
 class PxScene;
 class PxDefaultCpuDispatcher;
 class PxProfileZoneManager;
+class PxControllerManager;
 
 namespace debugger {
 namespace comm {

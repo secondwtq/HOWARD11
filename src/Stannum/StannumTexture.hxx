@@ -36,6 +36,54 @@ namespace Verdandi {
 
 using namespace FSMHelper;
 
+enum ImageChannelType {
+    INONE,
+    IRGBA,
+    IRGB,
+    IGRAY,
+    IGRAYA
+};
+
+enum ImageSourceFormat {
+    FNone,
+    FPNG
+};
+
+class ImageHelper {
+public:
+    inline static size_t numberOfChannels(ImageChannelType channel) {
+        switch (channel) {
+            case IRGBA:
+                return 4;
+            case IRGB:
+                return 3;
+            case IGRAY:
+                return 1;
+            case IGRAYA:
+                return 2;
+            default:
+                return 0;
+        }
+    }
+
+    static unsigned int stbTypeForChannel(ImageChannelType channel) {
+        switch (channel) {
+            case IRGBA:
+                return STBI_rgb_alpha;
+            case IRGB:
+                return STBI_rgb;
+            case IGRAY:
+                return STBI_grey;
+            case IGRAYA:
+                return STBI_grey_alpha;
+            default:
+                return 0;
+        }
+    }
+
+    static VGLIDX glEnumForChannelFormat(ImageChannelType channel);
+};
+
 class Image {
 
     public:
@@ -59,11 +107,32 @@ class Image {
 
     bool ok() const { return !(m_image.empty()); }
 
+    void loadFromMemory(const RawDataT *data, size_t len,
+            ImageChannelType channel_fmt, ImageSourceFormat format) {
+        assert(data); assert(len);
+        assert(m_image.empty());
+
+        int width, height, channels;
+        RawDataT *decoded = stbi_load_from_memory(data, len,
+                &width, &height, &channels, ImageHelper::stbTypeForChannel(channel_fmt));
+
+        if (decoded) {
+            size = { width, height };
+            m_image.resize(width * height * channels);
+            memcpy(m_image.data(), decoded, m_image.size() * sizeof(RawDataT));
+            stbi_image_free(decoded);
+        } else {
+            log("Verdandi", Warning) << "Failed to load Image " << m_name << ": " <<
+            stbi_failure_reason() << rn;
+        }
+    }
+
     void load_from_mem(const RawDataT *data, size_t len) {
         assert(data); assert(len);
         assert(m_image.empty());
 
         int width, height, channels;
+        m_channel_type = IRGBA;
         RawDataT *decoded = stbi_load_from_memory(data, len,
             &width, &height, &channels, STBI_rgb_alpha);
 
@@ -80,8 +149,12 @@ class Image {
 
     const RawDataT *ptr() const { return m_image.data(); }
 
+    ImageChannelType channelFormat() const {
+        return m_channel_type; }
+
     private:
 
+    ImageChannelType m_channel_type = INONE;
     std::string m_name;
     std::vector<RawDataT> m_image;
 
@@ -98,25 +171,28 @@ class TextureImage : public Asset {
 
     glm::u16vec2 size;
 
-    void load(const Image& image);
+    void loadFromImage(const Image& image);
 
     VGLIDX id() const { return m_texid; }
 
-    private:
+    ImageChannelType channelFormat() const {
+        return m_channel_type; }
 
+private:
+
+    ImageChannelType m_channel_type = INONE;
     VGLIDX m_texid;
-
 };
 
 class Texture : public Asset {
 
-    public:
+public:
 
     Texture(const std::string& name, const TextureImage *parent) :
             Texture(name, parent, HO_UPOS_DEFAULT, HO_SIZE_DEFAULT) { }
 
-    Texture(const std::string& name, const TextureImage *parent, const glm::u16vec2& pp,
-            const glm::u16vec2& ss) : Asset(name), pos(pp), size(ss), m_parent(parent) {
+    Texture(const std::string& name, const TextureImage *parent, const HPixel& pp,
+            const HPixel& ss) : Asset(name), pos(pp), size(ss), m_parent(parent) {
         if (pp == HO_UPOS_DEFAULT)
             pos = { 0, 0 };
         if (size == HO_SIZE_DEFAULT)
@@ -130,6 +206,10 @@ class Texture : public Asset {
     static Texture *createWithEntireImage(const std::string& name, const TextureImage *parent) {
         return new Texture(name, parent); }
 
+    static Texture *createWithPartialImage(const std::string& name,
+            const TextureImage *parent, const HPixel& position, const HPixel& size) {
+        return new Texture(name, parent, position, size); }
+
     VGLIDX id() const { return m_parent->id(); }
 
     const char *asset_type() const override { return Texture::m_asset_type; }
@@ -141,9 +221,17 @@ class Texture : public Asset {
     glm::vec2 pos_start;
     glm::vec2 pos_end;
 
-    private:
+private:
 
     const TextureImage *m_parent;
+};
+
+class TextureAtlas : public Asset {
+public:
+    TextureAtlas(const std::string& name);
+
+private:
+
 
 };
 

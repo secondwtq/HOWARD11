@@ -57,6 +57,7 @@ public:
     physx::PxDefaultCpuDispatcher *m_dispatcher = nullptr;
     physx::PxScene *m_pxscene = nullptr;
     physx::PxRigidStatic *m_groundPlane = nullptr;
+    physx::PxControllerManager *m_cctmanager = nullptr;
 
 protected:
 

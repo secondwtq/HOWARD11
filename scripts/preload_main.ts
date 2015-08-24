@@ -1,8 +1,9 @@
 
 print("I'm preload.js!");
 
-var node_image: TextureImage = cast(Global.assetManager.named('node'), TextureImage);
-var node_texture: Texture = Texture.createWithEntireImage('node_all', node_image);
+var node_image: TextureImage = cast(Global.assetManager.named('TestUnit'), TextureImage);
+var node_texture: Texture = Texture.createWithPartialImage('TestUnit_aFrame',
+	node_image, new HPixel(835, 418), new HPixel(119, 93));
 
 class TestScriptNode extends ScriptNode {
 
@@ -66,7 +67,7 @@ new_node.childNode = sprite_node;
 root.invoke_event(HEvent.createShared());
 root.invoke_event(createScriptEvent<number>(0, 1));
 
-var phys_node = new HammerActorNode(root, Transform.createPositioned(new HAnyCoord(240, 240, 120)));
+var phys_node = new HammerActorNode(root, Transform.createPositioned(new HAnyCoord(1024, 240, 240)));
 var phys_body = new HammerPrimitiveBody(Foundation.hammerFoundation.defaultMaterial);
 phys_body.addBox(Transform.createDefault(), new HAnyCoord(12, 12, 12));
 

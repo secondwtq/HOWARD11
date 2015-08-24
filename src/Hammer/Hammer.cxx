@@ -66,6 +66,7 @@ void HammerScene::initialize(HammerFoundation *foundation,
     desc.flags |= PxSceneFlag::eENABLE_ACTIVETRANSFORMS;
     m_pxscene = foundation->m_physics->createScene(desc);
     assert(m_pxscene);
+    m_cctmanager = PxCreateControllerManager(*m_pxscene);
 }
 
 void HammerScene::createGroundPlane() {

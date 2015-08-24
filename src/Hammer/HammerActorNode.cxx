@@ -27,6 +27,10 @@ HammerActorNode::HammerActorNode(RootNode *scene, const Transform& transform)
     m_actor->userData = this;
 }
 
+HammerActorNode::HammerActorNode(RootNode *scene,
+        const Transform& transform, ConstructInternal internal) :
+        HNode(scene), m_actor(nullptr), m_transform(transform) { }
+
 void HammerActorNode::addToScene(HammerScene *scene) {
         scene->scene()->addActor(*m_actor); }
 
@@ -54,6 +58,34 @@ float HammerActorNode::mass() const {
 
 float HammerActorNode::invMass() const {
     return m_actor->getInvMass(); }
+
+bool HammerActorNode::kinematic() const {
+    return m_actor->getRigidBodyFlags() & physx::PxRigidBodyFlag::eKINEMATIC; }
+
+bool HammerActorNode::dynamic() const {
+    return !kinematic(); }
+
+void HammerActorNode::setKinematic() {
+    if (!kinematic()) {
+        m_actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, true);
+    }
+}
+
+void HammerActorNode::setDynamic() {
+    if (kinematic()) {
+        m_actor->setRigidBodyFlag(physx::PxRigidBodyFlag::eKINEMATIC, false);
+    }
+}
+
+void HammerActorNode::setKinematicTarget(const Transform& transform) {
+    if (kinematic()) {
+        m_actor->setKinematicTarget(Glue::pxTransform(transform));
+    }
+}
+
+void HammerActorNode::setTransform(const Transform& transform) {
+    m_actor->setGlobalPose(Glue::pxTransform(transform));
+}
 
 }
 }

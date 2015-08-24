@@ -6,6 +6,8 @@
 		"out": "scripts/preload.js"
 	},
 	"files": [
+		"MonkeyBase.d.ts",
+		"Hammer.d.ts",
 		"FacerCore.d.ts",
 		"HOWARD.d.ts",	
 		"prelib.ts",

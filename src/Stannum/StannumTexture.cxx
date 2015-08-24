@@ -26,14 +26,31 @@ TextureImage::TextureImage(const std::string& name) : Asset(name.c_str()), size(
     this->m_texid = texture_t;
 }
 
-void TextureImage::load(const Image& image) {
+void TextureImage::loadFromImage(const Image& image) {
     assert(image.ok());
+    
     this->size = image.size;
+    this->m_channel_type = image.channelFormat();
     glBindTexture(GL_TEXTURE_2D, m_texid);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, size.x, size.y, 0, GL_RGBA, GL_UNSIGNED_BYTE, image.ptr());
+    glTexImage2D(GL_TEXTURE_2D, 0, ImageHelper::glEnumForChannelFormat(m_channel_type),
+            size.x, size.y, 0, ImageHelper::glEnumForChannelFormat(m_channel_type),
+            GL_UNSIGNED_BYTE, image.ptr());
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
+}
+
+VGLIDX ImageHelper::glEnumForChannelFormat(ImageChannelType channel) {
+    switch (channel) {
+        case IRGBA:
+            return GL_RGBA;
+        case IRGB:
+            return GL_RGB;
+        case IGRAY:
+            return GL_ALPHA;
+        default:
+            return 0;
+    }
 }
 
 }

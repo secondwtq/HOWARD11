@@ -27,7 +27,8 @@ link_directories(${PATH_PHYSXSDK}/Lib/osx64)
 set(LIBS_PHYSX PhysX3CommonDEBUG SimulationControllerDEBUG
         LowLevelDEBUG PvdRuntimeDEBUG PhysX3DEBUG SceneQueryDEBUG
         PhysXProfileSDKDEBUG PhysX3ExtensionsDEBUG LowLevelClothDEBUG
-        PhysXVisualDebuggerSDKDEBUG PxTaskDEBUG PhysX3CookingDEBUG)
+        PhysXVisualDebuggerSDKDEBUG PxTaskDEBUG PhysX3CookingDEBUG
+        PhysX3CharacterKinematicDEBUG)
 
 # stackoverflow.com/questions/4346412/how-to-prepend-all-filenames-on-the-list-with-common-path
 function(prepend var prefix)
