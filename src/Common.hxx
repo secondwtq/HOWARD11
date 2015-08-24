@@ -41,8 +41,11 @@ enum HowardRTTIType {
 #define HO_ENDLINE "\n"
 
 #include <glm/glm.hpp>
+#include <glm/gtx/quaternion.hpp>
 
 using HCoord = glm::i32vec3;
 using HPoint = glm::i16vec2;
+using HAnyCoord = glm::vec3;
+using HQuaternion = glm::quat;
 
 #endif // HOWARD11_COMMON_HXX

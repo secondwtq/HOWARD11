@@ -26,6 +26,11 @@ namespace Howard {
 class RootNode;
 class EventQueueManager;
 class AssetManager;
+
+namespace Hammer {
+class HammerFoundation;
+class HammerScene;
+}
 }
 
 namespace Howard {
@@ -44,6 +49,10 @@ public:
         return *m_eventQueues; }
     inline AssetManager& assetManager() {
         return *m_assetManager; }
+    inline Hammer::HammerFoundation& hammerFoundation() {
+        return *m_hammerFoundation; }
+    inline Hammer::HammerScene& mainPhysScene() {
+        return *m_mainPhysScene; }
 
     FoundationInstance& setJSRuntime(xoundation::SpdRuntime *runtime) {
         m_JSRuntime = runtime; return *this; }
@@ -56,6 +65,10 @@ public:
         m_eventQueues = queues; return *this; }
     FoundationInstance& setAssetManager(AssetManager *assetmanager) {
         m_assetManager = assetmanager; return *this; }
+    FoundationInstance& setHammerFoundation(Hammer::HammerFoundation *foundation) {
+        m_hammerFoundation = foundation; return *this; }
+    FoundationInstance& setMainPhysScene(Hammer::HammerScene *scene) {
+        m_mainPhysScene = scene; return *this; }
 
 private:
 
@@ -64,6 +77,9 @@ private:
     RootNode *m_rootNode = nullptr;
     EventQueueManager *m_eventQueues = nullptr;
     AssetManager *m_assetManager = nullptr;
+
+    Hammer::HammerFoundation *m_hammerFoundation = nullptr;
+    Hammer::HammerScene *m_mainPhysScene = nullptr;
 };
 
 extern FoundationInstance Foundation;

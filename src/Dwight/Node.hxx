@@ -48,7 +48,7 @@ namespace Stannum {
     class RenderQueue; }
 
 class EventListenerBase;
-class EventListenerScriptBase;
+class EventListenerScript;
 
 class ScriptEventBase;
 
@@ -63,11 +63,15 @@ class ScriptEventBase;
 //  * the order of listeners of the same event and the same priority
 //
 class EventListenerBase : public HowardBase,
-        std::enable_shared_from_this<EventListenerBase> {
+        public std::enable_shared_from_this<EventListenerBase> {
 public:
 
     static constexpr const int DEFAULT_PRIORITY = 64;
 
+    EventListenerBase() :
+            EventListenerBase(nullptr) { }
+    EventListenerBase(int priority) :
+            EventListenerBase(nullptr, priority) { }
     EventListenerBase(HNode *parent) :
             EventListenerBase(parent, DEFAULT_PRIORITY) { }
     EventListenerBase(HNode *parent, int priority) :

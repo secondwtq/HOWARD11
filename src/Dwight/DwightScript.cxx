@@ -50,14 +50,14 @@ void ScriptNodeBase::onScriptEvent(ScriptEventBase::shared_ptr_t event) {
     JS_CallFunctionName(m_scriptctx, self, "onScriptEvent", event_script, &rval);
 }
 
-void EventListenerScriptBase::onEvent(HEvent::shared_ptr_t event) {
+void EventListenerScript::onEvent(HEvent::shared_ptr_t event) {
     RootedObject self(m_context, scriptObject);
     RootedValue event_script(m_context, casterSharedEvent::tojs(m_context, event));
     RootedValue rval(m_context);
     JS_CallFunctionName(m_context, self, "onEvent", event_script, &rval);
 }
 
-void EventListenerScriptBase::onScriptEvent(ScriptEventBase::shared_ptr_t event) {
+void EventListenerScript::onScriptEvent(ScriptEventBase::shared_ptr_t event) {
     RootedObject self(m_context, scriptObject);
     RootedValue event_script(m_context, casterSharedScriptEvent::tojs(m_context, event));
     RootedValue rval(m_context);

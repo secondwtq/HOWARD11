@@ -23,6 +23,7 @@ enum EventType {
     EFoundation,
     EInputEvent,
     EScriptEvent,
+    EHammerTransformEvent,
     EEnd
 };
 
@@ -32,6 +33,9 @@ class HEvent {
 
 public:
     typedef std::shared_ptr<HEvent> shared_ptr_t;
+
+    HEvent() : HEvent(nullptr) { }
+    HEvent(HNode *source) : m_source(source) { }
 
     // ATTENTION: you should not make this
     //  (as a foundation class) directly instantiatable

@@ -20,6 +20,15 @@ endif()
 
 include_directories(SYSTEM src)
 
+set(PATH_PHYSXSDK /Users/secondwtq/Documents/PhysX-3.3/PhysXSDK)
+include_directories(${PATH_PHYSXSDK}/Include)
+link_directories(${PATH_PHYSXSDK}/Lib/osx64)
+
+set(LIBS_PHYSX PhysX3CommonDEBUG SimulationControllerDEBUG
+        LowLevelDEBUG PvdRuntimeDEBUG PhysX3DEBUG SceneQueryDEBUG
+        PhysXProfileSDKDEBUG PhysX3ExtensionsDEBUG LowLevelClothDEBUG
+        PhysXVisualDebuggerSDKDEBUG PxTaskDEBUG PhysX3CookingDEBUG)
+
 # stackoverflow.com/questions/4346412/how-to-prepend-all-filenames-on-the-list-with-common-path
 function(prepend var prefix)
     set(listVar "")
@@ -46,7 +55,7 @@ DwightScript.cxx Foundation.hxx)
 
 set(SOURCE_FACERCORE FacerEvent.hxx FacerEventKey.hxx FacerEvent.cxx FacerEventPortGLFW.hxx FacerEventPortGLFW.cxx)
 
-set(SOURCE_THIRDPT howardgl.hxx stb.cxx mozjs.hxx)
+set(SOURCE_THIRDPT howardgl.hxx stb.cxx mozjs.hxx physx.hxx)
 
 set(SOURCE_MISC Transform.hxx Transform.cxx hassert.hxx AtTheVeryBeginning.hxx AtTheVeryBeginning.cxx)
 
@@ -62,7 +71,7 @@ set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} 
     ${SOURCE_FACERCORE} ${SOURCE_THIRDPT} ${SOURCE_MISC})
 
 set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx src/GLFWEvents.hxx src/GLFWEvents.cxx
-        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx)
+        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Hammer/Hammer.cxx src/Hammer/Hammer.hxx src/Hammer/HammerActorNode.cxx src/Hammer/HammerActorNode.hxx src/Hammer/HammerPreDef.hxx src/Hammer/HammerTransform.cxx src/Hammer/HammerTransform.hxx src/Hammer/HammerGlue.cxx src/Hammer/HammerGlue.hxx src/Hammer/HammerPrimitiveBody.cxx src/Hammer/HammerPrimitiveBody.hxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
@@ -71,6 +80,7 @@ add_executable(HOWARD11 ${SOURCE_ALL} ${SOURCE_OTHER} src/Misc/hash_fix.hxx src/
 set(HOWARD_LIBS ${HOWARD_LIBS} glfw3)
 set(HOWARD_LIBS ${HOWARD_LIBS} confuse)
 set(HOWARD_LIBS ${HOWARD_LIBS} mozjs-31)
+set(HOWARD_LIBS ${HOWARD_LIBS} ${LIBS_PHYSX})
 
 if(APPLE)
 

@@ -18,7 +18,7 @@
 
 namespace Howard {
 
-namespace Transform {
+namespace Dolly {
 
 class Camera {
 
@@ -57,7 +57,7 @@ class IsometricCamera : public Camera {
         static IsometricCamera *instance;
 };
 
-HPoint view_pos(const HCoord& coord, const Camera *camera);
+HPoint view_pos(const HAnyCoord& coord, const Camera *camera);
 
 }
 

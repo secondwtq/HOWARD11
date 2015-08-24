@@ -43,12 +43,17 @@ private:
     EventTypeExt m_type_ext = static_cast<EventTypeExt>(EventType::EEnd) + 1;
 };
 
-class EventListenerScriptBase final : public EventListenerBase {
+class EventListenerScript final : public EventListenerBase {
 public:
-    EventListenerScriptBase(HNode *parent, const std::string& name, xoundation::spd::context_reference context) :
-            EventListenerScriptBase(parent, name, DEFAULT_PRIORITY, context) { }
-    EventListenerScriptBase(HNode *parent, const std::string& name, int priority, xoundation::spd::context_reference context) :
-            EventListenerBase(parent, priority), scriptObject(context), m_name(name), m_context(context) { }
+
+    static std::shared_ptr<EventListenerScript> createShared(
+            const std::string& name, xoundation::spd::context_reference context) {
+        return std::make_shared<EventListenerScript>(name, context); }
+
+    EventListenerScript(const std::string& name, xoundation::spd::context_reference context) :
+            EventListenerScript(name, DEFAULT_PRIORITY, context) { }
+    EventListenerScript(const std::string& name, int priority, xoundation::spd::context_reference context) :
+            EventListenerBase(priority), scriptObject(context), m_name(name), m_context(context) { }
 
     const char *listenerName() const override {
         return m_name.c_str(); }
@@ -64,13 +69,13 @@ private:
     JSContext *m_context;
 };
 
-struct EventListenerScriptData {
-    EventListenerScriptData(std::shared_ptr<EventListenerScriptBase> listener)
+struct EventListenerScriptDataBase {
+    EventListenerScriptDataBase(std::shared_ptr<EventListenerScript> listener)
             : m_listener(listener) { }
-    std::shared_ptr<EventListenerScriptBase> get_listener() {
+    std::shared_ptr<EventListenerScript> get_listener() {
         return m_listener.lock(); }
 private:
-    std::weak_ptr<EventListenerScriptBase> m_listener;
+    std::weak_ptr<EventListenerScript> m_listener;
 };
 
 }

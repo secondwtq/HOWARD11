@@ -20,6 +20,7 @@ declare enum EventType {
 	EFoundation,
 	EInputEvent,
 	EScriptEvent,
+	EHammerTransformEvent,
 	EEnd
 }
 
@@ -39,7 +40,7 @@ declare enum EventQueueType {
 
 declare function print(... args: any[]) : void;
 declare function collectgarbage(): void;
-declare function cast<From, To>(org: From, proto: { new (): To }): To;
+declare function cast<From, To>(org: From, proto: { new (... _args): To }): To;
 
 declare class HCoord {
 
@@ -56,6 +57,25 @@ declare class HPoint {
 
 	x: number;
 	y: number;
+}
+
+declare class HAnyCoord {
+	
+	constructor(x: number, y: number, z: number);
+	
+	x: number;
+	y: number;
+	z: number;
+}
+
+declare class HQuaternion {
+	
+	constructor(x: number, y: number, z: number, w: number);
+	
+	x: number;
+	y: number;
+	z: number;
+	w: number;
 }
 
 interface HowardBase {
@@ -89,6 +109,7 @@ declare class HEvent {
 	event_type_ext(): number;
 
 	root(): HNode;
+	source: HNode;
 
 	stop_propagation(): void;
 	stopped(): boolean;
@@ -109,15 +130,37 @@ declare class ScriptEventBase<T> extends HEvent {
 declare type ScriptEventAny = ScriptEventBase<any>;
 
 interface EventListenerBase extends HowardBase {
-	
+	priority: number;
+	listenerName: string;
+	listenerParent: HNode;
 }
 
-interface EventListenerScriptBase extends EventListenerBase {
+declare class EventListenerScript<T> 
+		implements EventListenerBase {
+			
+	static createShared<T>(name: string): EventListenerScript<T>;
+			
+	WhatAmI() : HowardRTTIType;
+	class_name() : string;
 	
+	priority: number;
+	listenerName: string;
+	listenerParent: HNode;
+	
+	data: T;
 }
 
-declare class EventListenerScriptBaseData {
-	listener : EventListenerScriptBase;
+interface EventListenerScriptDataBaseI<T> {	
+	listener: EventListenerScript<T>;
+}
+
+declare class EventListenerScriptDataBase<T> implements EventListenerScriptDataBaseI<T> {
+	static reproto<T>(proto: any): T;
+	static attachNew<T>(listener: T):
+		EventListenerScriptDataBase<T>;
+	
+	constructor(listener: EventListenerScript<EventListenerScriptDataBase<T>>);
+	listener: EventListenerScript<T>;
 }
 
 interface HNode extends EventListenerBase {
@@ -137,15 +180,19 @@ interface HNode extends EventListenerBase {
 	length: number;
 	child(idx: number): HNode;
 
-	addListener(type: EventType, typext: number, listener: EventListenerBase): EventListenerBase;
+	addListener(type: EventType, listener: EventListenerBase): EventListenerBase;
 	addScriptListener(typext: number, listener: EventListenerBase): EventListenerBase;
 	removeListener(type: EventType, listener: EventListenerBase): boolean;
 	invoke_event(event: HEvent): void;
 }
 
-declare class HNodeImpl implements EventListenerBase {
+declare class HNodeImpl implements HNode {
 	WhatAmI(): HowardRTTIType;
 	class_name(): string;
+
+	priority: number;
+	listenerName: string;
+	listenerParent: HNode;
 
 	RTTIID: number;
 	node_typeid(): HowardNodeType;
@@ -163,7 +210,7 @@ declare class HNodeImpl implements EventListenerBase {
 	length: number;
 	child(idx: number): HNode;
 
-	addListener(type: EventType, typext: number, listener: EventListenerBase): EventListenerBase;
+	addListener(type: EventType, listener: EventListenerBase): EventListenerBase;
 	addScriptListener(typext: number, listener: EventListenerBase): EventListenerBase;
 	removeListener(type: EventType, listener: EventListenerBase): boolean;
 	invoke_event(event: HEvent): void;
@@ -213,6 +260,9 @@ declare class FoundationInstance {
 	rootNode: RootNode;
 	eventQueues: EventQueueManager;
 	assetManager: AssetManager;
+	
+	hammerFoundation: HammerFoundation;
+	mainPhysScene: HammerScene;
 }
 
 declare var Foundation: FoundationInstance;
@@ -220,7 +270,72 @@ declare var Foundation: FoundationInstance;
 declare class StannumSpriteNode extends HNodeImpl {
 	static create(scene: RootNode, texture: Texture): StannumSpriteNode;
 	
-	position: HCoord;
-	// Set the sprite's position(3D, HCoord) in the world space
-	set_position(pos: HCoord): void;
+	position: HAnyCoord;
+	// Set the sprite's position(3D, HAnyCoord) in the world space
+	set_position(pos: HAnyCoord): void;
+}
+
+declare class HammerFoundation {
+	initialize();
+	defaultMaterial: HammerMaterial;
+}
+
+declare class HammerSceneCreateArgs {
+	
+}
+
+declare class HammerScene {
+	initialize(foundation: HammerFoundation, args: HammerSceneCreateArgs);
+}
+
+declare class Transform {
+	position: HAnyCoord;
+	rotation: HQuaternion;
+	
+	static create(position: HAnyCoord, rotation: HQuaternion): Transform;
+	static createDefault(): Transform;
+	static createPositioned(position: HAnyCoord): Transform;
+	static createRotated(rotation: HQuaternion): Transform;
+}
+
+declare enum HammerPrimitiveType {
+	PNone,
+	PSphere,
+	PBox,
+	PCapsule,
+	PEnd
+}
+
+declare class HammerMaterial {
+	constructor(foundation: HammerFoundation,
+		staticF: number, dynamicF: number, restitution: number);
+}
+
+declare class HammerPrimitiveBody {
+	constructor(material: HammerMaterial);
+	
+	addSphere(transform: Transform, radius: number);
+	addBox(transform: Transform, halfExtends: HAnyCoord);
+	addCapsule(transform: Transform, radius: number, halfLength: number);
+}
+
+declare class HammerPrimitiveHelper {
+	static attachPrimitivesToActor(body: HammerPrimitiveBody, node: HammerActorNode);
+}
+
+declare class HammerTransformEvent extends HEvent {
+	transform: Transform;
+}
+
+declare class HammerActorNode extends HNodeImpl {
+	constructor(scene: RootNode, transform: Transform);
+	
+	mass: number;
+	invMass: number;
+	
+	addToScene(scene: HammerScene);
+	addForce(force: HAnyCoord);
+	addImpulse(impulse: HAnyCoord);
+	addAcceleration(acc: HAnyCoord);
+	setVelocity(velocity: HAnyCoord);
 }

@@ -28,7 +28,7 @@ class StannumSpriteNode : public HNode {
 public:
 
     StannumSpriteNode (class RootNode *scene, Verdandi::Texture *texture)
-            : HNode(scene), camera(Transform::IsometricCamera::instance) {
+            : HNode(scene), camera(Dolly::IsometricCamera::instance) {
         m_data.set_texture_and_pos(texture, { 0, 0 }); }
 
     static StannumSpriteNode *create(RootNode *scene, Verdandi::Texture *texture) {
@@ -37,23 +37,23 @@ public:
     virtual HowardNodeType node_typeid() const { return HowardNodeType::NStannumSpriteNode; }
     virtual const char *node_type() const { return StannumSpriteNode::m_node_type; }
 
-    HCoord position() const {
+    HAnyCoord position() const {
         return m_position; }
 
-    void set_position(const HCoord& pos) {
+    void set_position(const HAnyCoord& pos) {
         this->m_position = pos; }
 
     void onPaint(Stannum::RenderQueue *queue) override {
-        m_data.set_position({ Transform::view_pos(m_position, camera) });
+        m_data.set_position({ Dolly::view_pos(m_position, camera) });
         queue->push(new Stannum::CommandSprite(&m_data)); }
 
     static constexpr const char m_node_type[] = "StannumSpriteNode";
 
-    Transform::Camera *camera = nullptr;
+    Dolly::Camera *camera = nullptr;
 
     private:
 
-    HCoord m_position;
+    HAnyCoord m_position;
     Stannum::DataSprite m_data;
 
 };

@@ -40,6 +40,10 @@
 
 #include "Dwight/Foundation.hxx"
 
+#include "Hammer/Hammer.hxx"
+#include "Hammer/HammerActorNode.hxx"
+#include "Hammer/HammerPrimitiveBody.hxx"
+
 #include <string>
 #include <memory>
 #include <vector>
@@ -103,6 +107,8 @@ int main() {
                 .enumerator<EventType::EFoundation>("EFoundation")
                 .enumerator<EventType::EInputEvent>("EInputEvent")
                 .enumerator<EventType::EScriptEvent>("EScriptEvent")
+                .enumerator<EventType::EHammerTransformEvent>
+                        ("EHammerTransformEvent")
                 .enumerator<EventType::EEnd>("EEnd");
 
         // enum Observers - Observers.hxx
@@ -147,20 +153,26 @@ int main() {
 
         class_info<EventListenerBase>::inst_wrapper::set(new
                 class_info<EventListenerBase>(rt, "EventListenerBase"));
-        klass<EventListenerBase>().inherits<HowardBase>(global, argpack<HNode *>());
+        klass<EventListenerBase>().inherits<HowardBase>(global, argpack<HNode *>())
+                .accessor<int, &EventListenerBase::priority, &EventListenerBase::setPriority>("priority")
+                .accessor<const char *, &EventListenerBase::listenerName>("listenerName")
+                .accessor<HNode *, &EventListenerBase::listenerParent>("listenerParent");
 
         // class EventListenerScript : EventListenerBase - ScriptEvent.hxx
-        class_info<EventListenerScriptBase>::inst_wrapper::set(new
-                class_info<EventListenerScriptBase>(rt, "EventListenerScriptBase"));
-        klass<EventListenerScriptBase>().inherits<EventListenerBase>(global,
-                argpack<HNode *, const std::string&, context_reference>())
-                .property<JS::PersistentRootedObject, &EventListenerScriptBase::scriptObject>("data");
+        class_info<EventListenerScript>::inst_wrapper::set(new
+                class_info<EventListenerScript>(rt, "EventListenerScript"));
+        klass<EventListenerScript>().inherits<EventListenerBase>(global,
+                argpack<const std::string&, context_reference>())
+                .static_func<SPD_DEF(EventListenerScript::createShared)>("createShared")
+                .property<JS::PersistentRootedObject, &EventListenerScript::scriptObject>("data");
 
         // struct EventListenerScriptData - ScriptEvent.hxx
-        class_info<EventListenerScriptData>::inst_wrapper::set(new
-                class_info<EventListenerScriptData>(rt, "EventListenerScriptData"));
-        klass<EventListenerScriptData>().define(global, argpack<std::shared_ptr<EventListenerScriptBase>>())
-                .accessor<std::shared_ptr<EventListenerScriptBase>, &EventListenerScriptData::get_listener>("listener");
+        class_info<EventListenerScriptDataBase>::inst_wrapper::set(new
+                class_info<EventListenerScriptDataBase>(rt, "EventListenerScriptDataBase"));
+        klass<EventListenerScriptDataBase>().define(global, argpack<std::shared_ptr<EventListenerScript>>())
+                .reproto("reproto")
+                .attach("attachNew", argpack<std::shared_ptr<EventListenerScript>>())
+                .accessor<std::shared_ptr<EventListenerScript>, &EventListenerScriptDataBase::get_listener>("listener");
 
         // class Node - Node.hxx
         class_info<HNode>::inst_wrapper::set(new spd::class_info<HNode>(rt, "Node"));
@@ -179,10 +191,24 @@ int main() {
                 .method<SPD_DEF(&HNode::root)>("root")
                 .accessor<size_t, &HNode::get_length>("length")
                 .method<SPD_DEF(&HNode::child)>("child")
-                .method<SPD_DEF(&HNode::invoke_event)>("invoke_event");
+                .method<SPD_DEF(&HNode::invoke_event)>("invoke_event")
+                .method<std::shared_ptr<EventListenerBase> (HNode:: *)
+                        (EventType, std::shared_ptr<EventListenerBase>),
+                        &HNode::addListener>("addListener");
 
         class_info<RootNode>::inst_wrapper::set(new spd::class_info<RootNode>(rt, "RootNode"));
         klass<RootNode>().inherits<HNode>(global, spd::argpack<>());
+
+        // class HEvent - Event.hxx
+        class_info<HEvent>::inst_wrapper::set(new spd::class_info<HEvent>(rt, "HEvent"));
+        klass<HEvent>().define(global)
+                .static_func<SPD_DEF(HEvent::createShared)>("createShared")
+                .method<SPD_DEF(&HEvent::event_type)>("event_type")
+                .method<SPD_DEF(&HEvent::event_type_ext)>("event_type_ext")
+                .accessor<HNode *, &HEvent::source>("source")
+                .method<SPD_DEF(&HEvent::root)>("root")
+                .method<SPD_DEF(&HEvent::stop_propagation)>("stop_propagation")
+                .method<SPD_DEF(&HEvent::stopped)>("stopped");
 
         // class ScriptNode : Node - ScriptNode.hxx
         class_info<ScriptNodeBase>::inst_wrapper::set(new class_info<ScriptNodeBase>(rt, "ScriptNodeBase"));
@@ -221,7 +247,9 @@ int main() {
         klass<FoundationInstance>().define<>(global)
                 .accessor<RootNode&, &FoundationInstance::rootNode>("rootNode")
                 .accessor<EventQueueManager&, &FoundationInstance::eventQueues>("eventQueues")
-                .accessor<AssetManager&, &FoundationInstance::assetManager>("assetManager");
+                .accessor<AssetManager&, &FoundationInstance::assetManager>("assetManager")
+                .accessor<Hammer::HammerFoundation&, &FoundationInstance::hammerFoundation>("hammerFoundation")
+                .accessor<Hammer::HammerScene&, &FoundationInstance::mainPhysScene>("mainPhysScene");
         {
             JS::RootedObject foundation_proto(rt, class_info<FoundationInstance>::instance()->jsc_proto);
             JS::RootedValue foundation(rt, spd::caster<FoundationInstance&>::tojs(rt, Foundation));
@@ -235,18 +263,100 @@ int main() {
         klass<StannumSpriteNode>().inherits<HNode, spd::UseCXXLifetime>(
                         global, argpack<RootNode *, Verdandi::Texture *>())
                 .static_func<SPD_DEF(StannumSpriteNode::create)>("create")
-                .accessor<HCoord, &StannumSpriteNode::position>("position")
+                .accessor<HAnyCoord, &StannumSpriteNode::position>("position")
                 .method<SPD_DEF(&StannumSpriteNode::set_position)>("set_position");
 
-        // class Event - Event.hxx
-        class_info<HEvent>::inst_wrapper::set(new spd::class_info<HEvent>(rt, "HEvent"));
-        klass<HEvent>().define(global)
-                .static_func<SPD_DEF(HEvent::createShared)>("createShared")
-                .method<SPD_DEF(&HEvent::event_type)>("event_type")
-                .method<SPD_DEF(&HEvent::event_type_ext)>("event_type_ext")
-                .method<SPD_DEF(&HEvent::root)>("root")
-                .method<SPD_DEF(&HEvent::stop_propagation)>("stop_propagation")
-                .method<SPD_DEF(&HEvent::stopped)>("stopped");
+        {
+            using namespace Hammer;
+
+            // using HAnyCoord = glm::vec3 - Common.hxx
+            class_info<HAnyCoord>::inst_wrapper::set(new
+                    spd::class_info<HAnyCoord>(rt, "HAnyCoord"));
+            klass<HAnyCoord>().define<float, float, float>(global)
+                    .property<float, &HAnyCoord::x>("x")
+                    .property<float, &HAnyCoord::y>("y")
+                    .property<float, &HAnyCoord::z>("z");
+
+            // using HQuaternion = glm::quat - Common.hxx
+            class_info<HQuaternion>::inst_wrapper::set(new
+                    spd::class_info<HQuaternion>(rt, "HQuaternion"));
+            klass<HQuaternion>().define<float, float, float, float>(global)
+                    .property<float, &HQuaternion::x>("x")
+                    .property<float, &HQuaternion::y>("y")
+                    .property<float, &HQuaternion::z>("z")
+                    .property<float, &HQuaternion::z>("w");
+
+            // class HammerFoundation - Hammer/Hammer.hxx
+            class_info<HammerFoundation>::inst_wrapper::set(new
+                    class_info<HammerFoundation>(rt, "HammerFoundation"));
+            klass<HammerFoundation>().define(global)
+                    .method<SPD_DEF(&HammerFoundation::initialize)>("initialize")
+                    .accessor<Material *, &HammerFoundation::defaultMaterial>("defaultMaterial");
+
+            class_info<HammerScene>::inst_wrapper::set(new
+                    class_info<HammerScene>(rt, "HammerScene"));
+            klass<HammerScene>().define(global)
+                    .method<SPD_DEF(&HammerScene::initialize)>("initialize");
+
+            // struct HammerTransform - Hammer/HammerTransform.hxx
+            class_info<Transform>::inst_wrapper::set(new
+                    spd::class_info<Transform>(rt, "Transform"));
+            klass<Transform>().define(global)
+                    .static_func<SPD_DEF(Transform::create)>("create")
+                    .static_func<SPD_DEF(Transform::createDefault)>("createDefault")
+                    .static_func<SPD_DEF(Transform::createPositioned)>("createPositioned")
+                    .static_func<SPD_DEF(Transform::createRotated)>("createRotated")
+                    .property<HAnyCoord, &Transform::position>("position")
+                    .property<HQuaternion, &Transform::rotation>("rotation");
+
+            // enum PrimitiveType - Hammer/HammerPrimitiveBody.hxx
+            enumeration<PrimitiveType>().define(rt, global, "HammerPrimitiveType")
+                    .enumerator<PrimitiveType::PNone>("PNone")
+                    .enumerator<PrimitiveType::PSphere>("PSphere")
+                    .enumerator<PrimitiveType::PBox>("PBox")
+                    .enumerator<PrimitiveType::PCapsule>("PCapsule")
+                    .enumerator<PrimitiveType::PEnd>("PEnd");
+
+            // class Material - Hammer/HammerPrimitiveBody.hxx
+            class_info<Material>::inst_wrapper::set(new
+                    class_info<Material>(rt, "HammerMaterial"));
+            klass<Material>().define(global, argpack<HammerFoundation&, float, float, float>());
+
+            // class PrimitiveBody - Hammer/HammerPrimitiveBody.hxx
+            class_info<PrimitiveBody>::inst_wrapper::set(new
+                    class_info<PrimitiveBody>(rt, "HammerPrimitiveBody"));
+            klass<PrimitiveBody>().define(global, argpack<Material *>())
+                    .method<SPD_DEF(&PrimitiveBody::addSphere)>("addSphere")
+                    .method<SPD_DEF(&PrimitiveBody::addBox)>("addBox")
+                    .method<SPD_DEF(&PrimitiveBody::addCapsule)>("addCapsule");
+
+            // class PrimitiveHelper - Hammer/HammerPrimitiveBody.hxx
+            class_info<PrimitiveHelper>::inst_wrapper::set(new
+                    spd::class_info<PrimitiveHelper>(rt, "HammerPrimitiveHelper"));
+            klass<PrimitiveHelper>().define(global)
+                    .static_func<SPD_DEF(PrimitiveHelper::attachPrimitivesToActor)>("attachPrimitivesToActor");
+
+            // class HammerActorNode : HNode - Hammer/HammerActorNode.hxx
+            class_info<HammerActorNode>::inst_wrapper::set(new
+                    spd::class_info<HammerActorNode>(rt, "HammerActorNode"));
+            klass<HammerActorNode>().inherits<HNode, spd::UseCXXLifetime>(
+                    global, argpack<RootNode *, const Transform&>())
+                    .method<SPD_DEF(&HammerActorNode::addToScene)>("addToScene")
+                    .method<SPD_DEF(&HammerActorNode::addForce)>("addForce")
+                    .method<SPD_DEF(&HammerActorNode::addImpulse)>("addImpulse")
+                    .method<SPD_DEF(&HammerActorNode::addAcceleration)>("addAcceleration")
+                    .method<SPD_DEF(&HammerActorNode::setVelocity)>("setVelocity")
+                    .accessor<float, &HammerActorNode::mass>("mass")
+                    .accessor<float, &HammerActorNode::invMass>("invMass")
+                    .accessor<Transform, &HammerActorNode::transform>("transform");
+
+            // class HammerTransformEvent : HEvent - Hammer/HammerActorNode.hxx
+            class_info<HammerTransformEvent>::inst_wrapper::set(new
+                    class_info<HammerTransformEvent>(rt, "HammerTransformEvent"));
+            klass<HammerTransformEvent>().inherits<HEvent>(global,
+                            argpack<HammerActorNode *, const Transform&>())
+                    .property<Transform, &HammerTransformEvent::transform>("transform");
+        }
 
         // class ScriptEventBase : Event - ScriptEvent.hxx
         class_info<ScriptEventBase>::inst_wrapper::set(new spd::class_info<ScriptEventBase>(rt, "ScriptEventBase"));
@@ -339,6 +449,17 @@ int main() {
     Howard::Foundation.setRootNode(new Howard::RootNode());
     Howard::Foundation.setAssetManager(new Howard::AssetManager());
     Howard::Foundation.setEventQueues(new Howard::EventQueueManager());
+
+    Howard::Hammer::HammerFoundation *hammer_foundation =
+            new Howard::Hammer::HammerFoundation();
+    hammer_foundation->initialize();
+    Howard::Foundation.setHammerFoundation(hammer_foundation);
+    Howard::Hammer::HammerScene *hammer_scene = new Howard::Hammer::HammerScene();
+    hammer_scene->initialize(&Howard::Foundation.hammerFoundation(),
+            Howard::Hammer::HammerSceneCreateArgs { });
+    Howard::Foundation.setMainPhysScene(hammer_scene);
+    hammer_scene->createGroundPlane();
+
     Howard::Foundation.eventQueues().initialize();
 
     Howard::HNode r(&Howard::Foundation.rootNode());
@@ -416,14 +537,18 @@ int main() {
 
             Foundation.eventQueues().queueUpdate()->invoke();
 
+            Foundation.mainPhysScene().simulate(1.0 / 60.0f);
+            Foundation.mainPhysScene().fetchSync();
+
             glfwPollEvents();
         }
 
-        Transform::IsometricCamera::instance->update();
+        Dolly::IsometricCamera::instance->update();
         std::shared_ptr<Stannum::RenderQueue> queue(new Stannum::RenderQueue());
         Foundation.eventQueues().queuePaint()->setRenderQueue(queue).invoke();
 
         renderer.render_dispatch(queue);
+
         glfwSwapBuffers(window);
     }
 

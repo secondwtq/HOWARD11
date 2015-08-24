@@ -35,8 +35,8 @@ void key_callback(GLFWwindow *window, int key, int scancode, int action, int mod
         if (key == GLFW_KEY_UP) {
             glm::vec3 offset = { 1, 1, 0 };
             offset *= 32;
-            Howard::Transform::IsometricCamera::instance->look_at += offset;
-            Howard::Transform::IsometricCamera::instance->pos += offset;
+            Howard::Dolly::IsometricCamera::instance->look_at += offset;
+            Howard::Dolly::IsometricCamera::instance->pos += offset;
         }
     }
 
