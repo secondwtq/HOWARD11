@@ -76,6 +76,11 @@ declare class HQuaternion {
 	
 	constructor(x: number, y: number, z: number, w: number);
 	
+	static createEuler(euler: HAnyCoord): HQuaternion;
+	static normalize(quat: HQuaternion): HQuaternion;
+	
+	static length(quat: HQuaternion): number;
+	
 	x: number;
 	y: number;
 	z: number;

@@ -67,7 +67,10 @@ new_node.childNode = sprite_node;
 root.invoke_event(HEvent.createShared());
 root.invoke_event(createScriptEvent<number>(0, 1));
 
-var phys_node = new HammerActorNode(root, Transform.createPositioned(new HAnyCoord(1024, 240, 240)));
+var phys_node = new HammerActorNode(root, Transform.create(new HAnyCoord(256, 0, 120),
+	 HQuaternion.createEuler(new HAnyCoord(0, 0, 0.5235))));
+var t = HQuaternion.normalize(HQuaternion.createEuler(new HAnyCoord(0, 0, 0.5235)));
+print(t.x, ' ', t.y, ' ', t.z, ' ', t.w, ' ', HQuaternion.length(t));
 var phys_body = new HammerPrimitiveBody(Foundation.hammerFoundation.defaultMaterial);
 phys_body.addBox(Transform.createDefault(), new HAnyCoord(12, 12, 12));
 

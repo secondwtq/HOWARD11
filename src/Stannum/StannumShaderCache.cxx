@@ -33,7 +33,9 @@ void ShaderCache::load_shaders() {
 
 void ShaderCache::destroy_shaders() {
     for (auto& shader : m_shaders) {
-        shader->destroy(); }
+        if (shader) {
+            shader->destroy(); }
+    }
 }
 
 }

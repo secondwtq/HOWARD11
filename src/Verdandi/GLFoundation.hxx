@@ -16,6 +16,12 @@ namespace Howard {
 
 namespace Verdandi {
 
+enum BufferUsage {
+    UStatic,
+    UDynamic,
+    UStream
+};
+
 void gl_init();
 
 void clear_depth();

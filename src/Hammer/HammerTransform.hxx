@@ -40,6 +40,9 @@ struct Transform {
 
     HAnyCoord position;
     HQuaternion rotation;
+
+    static inline HQuaternion createEuler(const HAnyCoord& src) {
+        return HQuaternion(src); }
 };
 
 }

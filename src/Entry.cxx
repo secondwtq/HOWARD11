@@ -282,10 +282,13 @@ int main() {
             class_info<HQuaternion>::inst_wrapper::set(new
                     spd::class_info<HQuaternion>(rt, "HQuaternion"));
             klass<HQuaternion>().define<float, float, float, float>(global)
+                    .static_func<SPD_DEF(Transform::createEuler)>("createEuler")
+                    .static_func<HQuaternion (const HQuaternion&), glm::normalize>("normalize")
+                    .static_func<float (const HQuaternion&), glm::length>("length")
                     .property<float, &HQuaternion::x>("x")
                     .property<float, &HQuaternion::y>("y")
                     .property<float, &HQuaternion::z>("z")
-                    .property<float, &HQuaternion::z>("w");
+                    .property<float, &HQuaternion::w>("w");
 
             // class HammerFoundation - Hammer/Hammer.hxx
             class_info<HammerFoundation>::inst_wrapper::set(new

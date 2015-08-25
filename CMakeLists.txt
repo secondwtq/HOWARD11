@@ -72,7 +72,11 @@ set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} 
     ${SOURCE_FACERCORE} ${SOURCE_THIRDPT} ${SOURCE_MISC})
 
 set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx src/GLFWEvents.hxx src/GLFWEvents.cxx
-        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Hammer/Hammer.cxx src/Hammer/Hammer.hxx src/Hammer/HammerActorNode.cxx src/Hammer/HammerActorNode.hxx src/Hammer/HammerPreDef.hxx src/Hammer/HammerTransform.cxx src/Hammer/HammerTransform.hxx src/Hammer/HammerGlue.cxx src/Hammer/HammerGlue.hxx src/Hammer/HammerPrimitiveBody.cxx src/Hammer/HammerPrimitiveBody.hxx)
+        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx
+        src/Hammer/Hammer.cxx src/Hammer/Hammer.hxx src/Hammer/HammerActorNode.cxx src/Hammer/HammerActorNode.hxx
+        src/Hammer/HammerPreDef.hxx src/Hammer/HammerTransform.cxx src/Hammer/HammerTransform.hxx src/Hammer/HammerGlue.cxx
+        src/Hammer/HammerGlue.hxx src/Hammer/HammerPrimitiveBody.cxx src/Hammer/HammerPrimitiveBody.hxx
+        src/Dune/Dune.cxx src/Dune/Dune.hxx src/Dune/DuneShader.cxx src/Dune/DuneShader.hxx src/Dune/DuneCommon.hxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 

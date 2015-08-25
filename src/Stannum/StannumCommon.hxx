@@ -19,6 +19,8 @@ namespace Stannum {
 enum ShaderType {
 
     CommonSprite = 0,
+    DuneTerrain = 1,
+    DuneCache = 2,
     End,
 
 };
