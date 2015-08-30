@@ -88,7 +88,7 @@ set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} 
     ${SOURCE_FACERCORE} ${SOURCE_THIRDPT} ${SOURCE_MISC} ${SOURCE_HAMMER} ${SOURCE_DUNE} ${SOURCE_GUARDIAN})
 
 set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx src/GLFWEvents.hxx src/GLFWEvents.cxx
-        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Verdandi/GLVertexBufferExt.hxx)
+        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Verdandi/GLVertexBufferExt.hxx src/Guardian/GuardianCacheShader.cxx src/Guardian/GuardianCacheShader.hxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 

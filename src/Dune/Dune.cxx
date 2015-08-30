@@ -19,6 +19,8 @@
 #include "FSM/FSM.hxx"
 #include "FSM/FSMHelper.hxx"
 
+#include "Guardian/Guardian.hxx"
+
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -45,7 +47,7 @@ std::vector<VertFormatDuneTerrain> Helper::generateChunkVertex(
     return ret;
 }
 
-DuneTerrain::DuneTerrain(const HPixel& num_chunks) :
+DuneTerrain::DuneTerrain(const HPixel& num_chunks, Stannum::StannumRenderer *renderer) :
         m_num_chunks(num_chunks), m_chunks(num_chunks.x),
         m_total_size(num_chunks.x * Constants::cellsPerChunkX * Constants::cellSize,
             num_chunks.y * Constants::cellsPerChunkY * Constants::cellSize),
@@ -53,7 +55,10 @@ DuneTerrain::DuneTerrain(const HPixel& num_chunks) :
         ::createWithVector(Verdandi::BufferUsage::UStatic, Helper::generateChunkVertex(
                 { Constants::cellsPerChunkX * Constants::gridPerCellX,
                         Constants::cellsPerChunkY * Constants::gridPerCellY },
-                Constants::gridSize))) {
+                Constants::gridSize))),
+        m_renderer(renderer) {
+
+    ASSERT(renderer);
 
     for (size_t i = 0; i < num_chunks.x; i++) {
         for (size_t j = 0; j < num_chunks.y; j++) {
@@ -63,7 +68,7 @@ DuneTerrain::DuneTerrain(const HPixel& num_chunks) :
         }
     }
 
-    m_caches.emplace_back(std::make_shared<DuneTextureCache>());
+    m_caches.emplace_back(std::make_shared<DuneTextureCache>(renderer));
 
 }
 
@@ -125,12 +130,19 @@ void DispatchCommandDuneTerrain::execute(Stannum::StannumRenderer *renderer) {
     }
 }
 
-DuneTextureCache::DuneTextureCache() {
+DuneTextureCache::DuneTextureCache(Stannum::StannumRenderer *renderer)
+    : m_renderer(renderer), m_canvas(new Guardian::GuardianCanvas(renderer)) {
+    ASSERT(renderer);
     for (size_t i = DuneTextureType::DColor; i < DuneTextureType::DEnd; i++) {
         std::string name = "DuneTextureCache_"; name += i;
         this->m_textures[i] = std::make_shared<Verdandi::TextureImage>(name);
         this->m_textures[i]->loadEmpty({ 4096, 4096 }, Verdandi::ImageChannelType::IRGB);
     }
+    initializeCanvas();
+}
+
+void DuneTextureCache::initializeCanvas() {
+    m_canvas->setTarget(this->m_textures[0]);
 }
 
 void DuneTerrain::cacheChunk(std::shared_ptr<DuneChunk> chunk) {
@@ -184,7 +196,22 @@ std::weak_ptr<DuneTextureCacheData> DuneTextureCache::insertCacheEntry(
     m_cache_cache.insert({ chunk.get(), data });
     data->updateChunkWithSelf(data);
 
+    chunk->updateCachedTexture();
+
     return data;
+}
+
+void DuneChunk::updateCachedTexture() {
+    ASSERT(cached());
+    std::shared_ptr<DuneTextureCacheData> data = m_cache_data.lock();
+    std::shared_ptr<Guardian::GuardianElementTerrainLayersGroup> element =
+            std::make_shared<Guardian::GuardianElementTerrainLayersGroup>(data->index);
+    for (auto layer : layers()) {
+        element->addLayer(layer); }
+    if (element->numberOfLayers()) {
+        data->cache.lock()->canvas()->paintBlock([ &element ](Guardian::GuardianCanvas *canvas) {
+            element->paint(canvas); });
+    }
 }
 
 std::shared_ptr<DuneTextureCacheData> DuneTextureCache::pickAndKickAnEntry() {

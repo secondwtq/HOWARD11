@@ -17,6 +17,8 @@
 #include "thirdpt/stb_image_resize.hxx"
 #include "thirdpt/howardgl.hxx"
 
+#include "JSFunctions.hxx"
+
 #include <string.h>
 
 namespace Howard {
@@ -106,6 +108,13 @@ void Image::load_from_mem(const RawDataT *data, size_t len) {
         log("Verdandi", Warning) << "Failed to load Image " << m_name << ": " <<
         stbi_failure_reason() << rn;
     }
+}
+
+void Image::loadFromFile(const std::string& filename,
+        ImageChannelType channel_fmt, ImageSourceFormat format) {
+    std::string buf = readfile(filename);
+    loadFromMemory(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()),
+            buf.length(), channel_fmt, format);
 }
 
 void Image::resize(const HPixel& size) {

@@ -13,7 +13,6 @@
 #define HOWARD11_GLFOUNDATION_HXX
 
 namespace Howard {
-
 namespace Verdandi {
 
 enum BufferUsage {
@@ -26,11 +25,12 @@ void gl_init();
 
 void clear_depth();
 
+void resetRenderTarget();
+
 template <typename T>
 class VertexBufferSingle;
 
 }
-
 }
 
 #endif // HOWARD11_GLFOUNDATION_HXX

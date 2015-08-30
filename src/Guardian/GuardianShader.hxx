@@ -30,6 +30,8 @@ public:
     DEF_ATTRIBUTE(position);
     DEF_ATTRIBUTE(texcoord);
 
+    DEF_UNIFORM(model_view_and_projection);
+
     DEF_UNIFORM(brush_center);
     DEF_UNIFORM(brush_size);
 

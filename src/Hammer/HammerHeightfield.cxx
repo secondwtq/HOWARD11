@@ -77,5 +77,10 @@ void HammerHeightfield::setDataImage(std::shared_ptr<Verdandi::Image> image) {
     m_data_img = image;
 }
 
+HammerHeightfield::~HammerHeightfield() {
+    if (m_heightfield) {
+        m_heightfield->release(); }
+}
+
 }
 }

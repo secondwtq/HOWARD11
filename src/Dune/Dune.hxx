@@ -26,6 +26,11 @@
 #include <deque>
 
 namespace Howard {
+
+namespace Guardian {
+class GuardianCanvas;
+}
+
 namespace Dune {
 
 namespace Constants {
@@ -48,6 +53,7 @@ enum DuneTextureType {
     DEnd
 };
 
+class DuneLayer;
 class DuneChunk;
 class DuneTextureCache;
 struct DuneTextureCacheData;
@@ -58,7 +64,8 @@ struct DuneTextureCacheData;
 class DuneTerrain {
 public:
 
-    DuneTerrain(const HPixel& num_chunks);
+    DuneTerrain(const HPixel& num_chunks,
+            Stannum::StannumRenderer *renderer);
 
     inline std::shared_ptr<Verdandi::VertexBufferSingle<VertFormatDuneTerrain>> vertexBuffer() {
         return m_vert_buffer; }
@@ -75,6 +82,11 @@ public:
 
     HAnyCoord heightfieldScale() const;
 
+    inline std::shared_ptr<DuneChunk> chunkAt(size_t x, size_t y) {
+        ASSERT(x < m_total_size.x && y < m_total_size.y);
+        return m_chunks[x][y];
+    }
+
     HPixel m_num_chunks;
     std::vector<std::vector<std::shared_ptr<DuneChunk>>> m_chunks;
     HPixel m_total_size;
@@ -83,12 +95,16 @@ public:
     std::vector<std::shared_ptr<DuneTextureCache>> m_caches;
 
     std::shared_ptr<Verdandi::Image> m_scaled_height;
+
+    Stannum::StannumRenderer *m_renderer;
 };
 
 class DuneTextureCache : public std::enable_shared_from_this<DuneTextureCache> {
 public:
 
-    DuneTextureCache();
+    DuneTextureCache(Stannum::StannumRenderer *renderer);
+
+    void initializeCanvas();
 
     inline size_t size() const {
         return m_cache_cache.size(); }
@@ -110,6 +126,9 @@ public:
     std::weak_ptr<DuneTextureCacheData> insertCacheEntry(
             std::shared_ptr<DuneChunk> chunk, const glm::u8vec2& idx);
 
+    inline Guardian::GuardianCanvas *canvas() {
+        return m_canvas; }
+
 private:
 
     std::deque<std::shared_ptr<DuneTextureCacheData>> m_queue;
@@ -117,6 +136,9 @@ private:
     std::unordered_map<DuneChunk *, std::weak_ptr<DuneTextureCacheData>> m_cache_cache;
 
     std::shared_ptr<Verdandi::TextureImage> m_textures[DuneTextureType::DEnd];
+
+    Stannum::StannumRenderer *m_renderer;
+    Guardian::GuardianCanvas *m_canvas;
 };
 
 // According to our documents
@@ -143,9 +165,25 @@ public:
         return m_cache_data.lock();
     }
 
+    const std::vector<std::shared_ptr<DuneLayer>>& layers() const {
+        return m_layers; }
+
+    size_t numberOfLayers() const {
+        return m_layers.size(); }
+
+    void appendLayer(std::shared_ptr<DuneLayer> layer) {
+        ASSERT(layer != nullptr);
+        m_layers.push_back(layer);
+    }
+
+    void updateCachedTexture();
+
 private:
+
+    std::vector<std::shared_ptr<DuneLayer>> m_layers;
+
     friend struct DuneTextureCacheData;
-    inline void setData(std::weak_ptr<DuneTextureCacheData> data) {
+    inline void setCacheData(std::weak_ptr<DuneTextureCacheData> data) {
         m_cache_data = data; }
 
     std::weak_ptr<DuneTextureCacheData> m_cache_data;
@@ -163,13 +201,36 @@ struct DuneTextureCacheData {
     inline void updateChunkWithSelf(std::weak_ptr<DuneTextureCacheData> self) {
         ASSERT(!chunk.expired());
         ASSERT(!self.expired() && self.lock().get() == this);
-        chunk.lock()->setData(self);
+        chunk.lock()->setCacheData(self);
     }
+};
+
+class DuneTextureSet {
+public:
+
+    std::shared_ptr<Verdandi::TextureImage> texture(DuneTextureType type) {
+        return m_textures[type]; }
+
+    std::shared_ptr<Verdandi::TextureImage> m_textures[DuneTextureType::DEnd];
 };
 
 class DuneLayer {
 public:
 
+    DuneLayer(std::shared_ptr<DuneTextureSet> textures,
+            std::shared_ptr<Verdandi::TextureImage> mask)
+            : m_textures(textures), m_mask(mask) {
+        ASSERT((textures != nullptr) && (mask != nullptr)); }
+
+    const std::shared_ptr<DuneTextureSet> textureSet() const {
+        return m_textures; }
+
+    const std::shared_ptr<Verdandi::TextureImage> mask() const {
+        return m_mask; }
+
+    HAnyCoord uvscale { 2 };
+    std::shared_ptr<DuneTextureSet> m_textures;
+    std::shared_ptr<Verdandi::TextureImage> m_mask;
 };
 
 class Helper {

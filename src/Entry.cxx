@@ -538,48 +538,71 @@ int main() {
     std::shared_ptr<Howard::Verdandi::TextureImage> textureimage_dunepretex(
             new Howard::Verdandi::TextureImage("dunepretex"));
     {
-        Howard::Verdandi::Image image_t("load");
-        std::string buf = readfile("assets/node.png");
-        image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length());
-        textureimage->loadFromImage(image_t);
-    }
-    {
-        Howard::Verdandi::Image image_t("TestUnitImage");
-        std::string buf = readfile("assets/TestUnit.png");
-        image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length());
-        textureimage_TestUnit->loadFromImage(image_t);
-    }
-    {
-        Howard::Verdandi::Image image_t("TestDotImage");
-        std::string buf = readfile("assets/dot.png");
-        image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length());
-        textureimage_dot->loadFromImage(image_t);
-    }
-    {
-        Howard::Verdandi::Image image_t("heightmap");
-        std::string buf = readfile("assets/heightmap.png");
-        image_t.loadFromMemory(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length(),
-                Howard::Verdandi::ImageChannelType::IGRAY);
-        textureimage_heightmap->loadFromImage(image_t);
-    }
-    {
-        Howard::Verdandi::Image image_t("pretex");
-        std::string buf = readfile("assets/dune_pretex.png");
-        image_t.loadFromMemory(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length(),
-                Howard::Verdandi::ImageChannelType::IRGB);
-        textureimage_dunepretex->loadFromImage(image_t);
+        using namespace Howard;
+        using namespace Howard::Verdandi;
+
+        auto t = Image::createFromFile("load", "assets/node.png", IRGBA);
+        textureimage->loadFromImage(*t.get());
+
+        t = Image::createFromFile("TestUnitImage", "assets/TestUnit.png", IRGBA);
+        textureimage_TestUnit->loadFromImage(*t.get());
+
+        t = Image::createFromFile("TestDotImage", "assets/dot.png", IRGBA);
+        textureimage_dot->loadFromImage(*t.get());
+
+        t = Image::createFromFile("heightmap", "assets/heightmap.png", IGRAY);
+        textureimage_heightmap->loadFromImage(*t.get());
+
+        t = Image::createFromFile("pretex", "assets/dune_pretex.png", IRGB);
+        textureimage_dunepretex->loadFromImage(*t.get());
+
+        std::shared_ptr<TextureImage> rocky(new TextureImage("tile_rocky"));
+        t = Image::createFromFile("rocky", "assets/tiles/rocky.png", IRGB);
+        rocky->loadFromImage(*t.get());
+
+        std::shared_ptr<TextureImage> sandpebble(new TextureImage("tile_sandpebble"));
+        t = Image::createFromFile("sandpebble", "assets/tiles/sandpebble.png", IRGB);
+        sandpebble->loadFromImage(*t.get());
+
+        std::shared_ptr<TextureImage> layer1_mask(new TextureImage("layer1"));
+        t = Image::createFromFile("layer1", "assets/layer1.png", IGRAY);
+        layer1_mask->loadFromImage(*t.get());
+
+        std::shared_ptr<TextureImage> layer2_mask(new TextureImage("layer2"));
+        t = Image::createFromFile("layer2", "assets/layer2.png", IGRAY);
+        layer2_mask->loadFromImage(*t.get());
+
+        using namespace Dune;
+
+        terrain = new DuneTerrain(HPixel(8, 8), &renderer);
+        terrain->setHeightmap(textureimage_heightmap);
+        terrain->m_caches[0]->textures()[0]->loadFromTextureImage(*textureimage_dunepretex.get());
+        terrain->m_caches[0]->initializeCanvas();
+        auto tileset1 = std::make_shared<DuneTextureSet>();
+        auto tileset2 = std::make_shared<DuneTextureSet>();
+        tileset1->m_textures[0] = rocky;
+        tileset2->m_textures[0] = sandpebble;
+
+        auto layer1 = std::make_shared<DuneLayer>(tileset1, layer1_mask);
+        auto layer2 = std::make_shared<DuneLayer>(tileset2, layer2_mask);
+
+        auto chunk0 = terrain->chunkAt(0, 0);
+        chunk0->appendLayer(layer1);
+        chunk0->appendLayer(layer2);
     }
 
-    terrain = new Howard::Dune::DuneTerrain(HPixel(8, 8));
-    terrain->setHeightmap(textureimage_heightmap);
-    terrain->m_caches[0]->textures()[0]->loadFromTextureImage(*textureimage_dunepretex.get());
-    Howard::Hammer::HammerActorNodeStatic *ground = new
-            Howard::Hammer::HammerActorNodeStatic(&Howard::Foundation.rootNode(), { });
-    Howard::Hammer::HammerHeightfield *field = new Howard::Hammer::HammerHeightfield();
-    field->setDataImage(terrain->m_scaled_height);
-    field->generateHeightfield();
-    Howard::Hammer::PrimitiveHelper::attachHeightfieldToActor(*field, ground, terrain->heightfieldScale());
-    ground->addToScene(&Howard::Foundation.mainPhysScene());
+    {
+        using namespace Howard;
+        using namespace Howard::Hammer;
+
+        HammerActorNodeStatic *ground = new
+                HammerActorNodeStatic(&Foundation.rootNode(), { });
+        std::unique_ptr<HammerHeightfield> field(new HammerHeightfield());
+        field->setDataImage(terrain->m_scaled_height);
+        field->generateHeightfield();
+        PrimitiveHelper::attachHeightfieldToActor(*field, ground, terrain->heightfieldScale());
+        ground->addToScene(&Foundation.mainPhysScene());
+    }
 
     {
         JSAutoRequest req(Howard::Foundation.JSRuntime());

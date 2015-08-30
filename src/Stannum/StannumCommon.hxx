@@ -22,6 +22,7 @@ enum ShaderType {
     CommonSprite = 0,
     DuneTerrain = 1,
     Guardian = 2,
+    GuardianCache = 3,
     End,
 
 };

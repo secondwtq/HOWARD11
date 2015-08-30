@@ -16,12 +16,11 @@
 #include "Misc/AtTheVeryBeginning.hxx"
 
 namespace Howard {
-
 namespace Verdandi {
 
 VGLVertexArray vertex_arrays[5];
 
-void reset_target() {
+void resetRenderTarget() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
     glViewport(0, 0, 1600, 1200);
 //    glViewport(0, 0,
@@ -30,7 +29,7 @@ void reset_target() {
 //                       ->actual_height);
 }
 
-void init_target() { return reset_target(); }
+void init_target() { return resetRenderTarget(); }
 
 void gl_init() {
 
@@ -49,6 +48,4 @@ void clear_depth() {
 }
 
 }
-
 }
-

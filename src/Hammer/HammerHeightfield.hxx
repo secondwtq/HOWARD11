@@ -25,6 +25,7 @@ public:
     HammerHeightfield();
     HammerHeightfield(Material *material)
         : m_material(material) { }
+    ~HammerHeightfield();
 
     inline physx::PxHeightField *heightfield() {
         return m_heightfield; }

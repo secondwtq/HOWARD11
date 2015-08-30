@@ -33,6 +33,7 @@ public:
     }
 
 private:
+//    VertexAttributeArrayScope(const VertexAttributeArrayScope<N>&) = delete;
     std::array<VGLIDX, N> m_locations;
 };
 

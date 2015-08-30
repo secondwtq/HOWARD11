@@ -16,6 +16,7 @@
 #include "Stannum/StannumSpriteShader.hxx"
 #include "Dune/DuneShader.hxx"
 #include "Guardian/GuardianShader.hxx"
+#include "Guardian/GuardianCacheShader.hxx"
 
 #include <iostream>
 
@@ -30,8 +31,8 @@ void ShaderCache::load_shaders() {
     // another TODO: async loading
     {
         SpriteShader *shader_sprite = new SpriteShader();
-        shader_sprite->load_file(Verdandi::SHADERTYPE::VERTEX, "stannum.vert");
-        shader_sprite->load_file(Verdandi::SHADERTYPE::FRAG, "stannum.frag");
+        shader_sprite->load_file(Verdandi::SHADERTYPE::VERTEX, "shaders/stannum.vert");
+        shader_sprite->load_file(Verdandi::SHADERTYPE::FRAG, "shaders/stannum.frag");
         shader_sprite->create();
         shader_sprite->init_shader();
 
@@ -43,8 +44,8 @@ void ShaderCache::load_shaders() {
 
     {
         Dune::DuneTerrainShader *shader_terrain = new Dune::DuneTerrainShader();
-        shader_terrain->load_file(Verdandi::SHADERTYPE::VERTEX, "dune_terrain.vert");
-        shader_terrain->load_file(Verdandi::SHADERTYPE::FRAG, "dune_terrain.frag");
+        shader_terrain->load_file(Verdandi::SHADERTYPE::VERTEX, "shaders/dune_terrain.vert");
+        shader_terrain->load_file(Verdandi::SHADERTYPE::FRAG, "shaders/dune_terrain.frag");
         shader_terrain->create();
         shader_terrain->init_shader();
 
@@ -56,8 +57,8 @@ void ShaderCache::load_shaders() {
 
     {
         Guardian::GuardianShader *shader_guardian = new Guardian::GuardianShader();
-        shader_guardian->load_file(Verdandi::SHADERTYPE::VERTEX, "guardian.vert");
-        shader_guardian->load_file(Verdandi::SHADERTYPE::FRAG, "guardian.frag");
+        shader_guardian->load_file(Verdandi::SHADERTYPE::VERTEX, "shaders/guardian.vert");
+        shader_guardian->load_file(Verdandi::SHADERTYPE::FRAG, "shaders/guardian.frag");
         shader_guardian->create();
         shader_guardian->init_shader();
 
@@ -65,6 +66,19 @@ void ShaderCache::load_shaders() {
         std::cout << shader_guardian->log(Verdandi::SHADERTYPE::FRAG);
 
         m_shaders[ShaderType::Guardian] = shader_guardian;
+    }
+
+    {
+        Guardian::GuardianCacheShader *shader_guardiancache = new Guardian::GuardianCacheShader();
+        shader_guardiancache->load_file(Verdandi::SHADERTYPE::VERTEX, "shaders/guardian_cache.vert");
+        shader_guardiancache->load_file(Verdandi::SHADERTYPE::FRAG, "shaders/guardian_cache.frag");
+        shader_guardiancache->create();
+        shader_guardiancache->init_shader();
+
+        std::cout << shader_guardiancache->log(Verdandi::SHADERTYPE::VERTEX);
+        std::cout << shader_guardiancache->log(Verdandi::SHADERTYPE::FRAG);
+
+        m_shaders[ShaderType::GuardianCache] = shader_guardiancache;
     }
 
 }
@@ -77,5 +91,4 @@ void ShaderCache::destroy_shaders() {
 }
 
 }
-
 }

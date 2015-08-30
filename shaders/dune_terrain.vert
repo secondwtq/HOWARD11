@@ -32,6 +32,9 @@ vec4 parse_heightfield(in sampler2D heightfield_sampler, in vec2 texcoord) {
 
 	vec4 height = texture(heightfield_sampler, texcoord);
 
+    // for the physics better to do with
+    //  we moved heightmap 0.0 to be height 0.0,
+    //  instead of using 0.5 as 0.0.
     float s11 = 192 * (height.x);
     float s01 = texture(heightfield_sampler, texcoord+off.xy).x;
     float s21 = texture(heightfield_sampler, texcoord+off.zy).x;

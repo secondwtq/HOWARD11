@@ -92,8 +92,18 @@ class Image {
     void loadFromImageAndResize(const Image& other, const HPixel& size);
     void loadFromMemory(const RawDataT *data, size_t len, ImageChannelType channel_fmt,
                 ImageSourceFormat format = ImageSourceFormat::FPNG);
-    void load_from_mem(const RawDataT *data, size_t len);
     void loadFromTextureImage(const TextureImage& other);
+    void loadFromFile(const std::string& filename, ImageChannelType channel_fmt,
+            ImageSourceFormat format = ImageSourceFormat::FPNG);
+    void load_from_mem(const RawDataT *data, size_t len);
+
+    static inline std::shared_ptr<Image> createFromFile(const std::string& name,
+            const std::string& filename, ImageChannelType channel_fmt,
+            ImageSourceFormat format = ImageSourceFormat::FPNG) {
+        std::shared_ptr<Image> ret = std::make_shared<Image>(name.c_str());
+        ret->loadFromFile(filename, channel_fmt, format);
+        return ret;
+    }
 
     void resize(const HPixel& size);
     void scale(const HScale& val) {
@@ -132,6 +142,13 @@ public:
     void loadFromImage(const Image& image);
     void loadFromTextureImage(const TextureImage& image);
     void loadEmpty(const HPixel& size, ImageChannelType channelfmt);
+
+    std::shared_ptr<TextureImage> createEmpty(const std::string& name,
+            const HPixel& size, ImageChannelType channelfmt) {
+        std::shared_ptr<TextureImage> ret = std::make_shared<TextureImage>(name);
+        ret->loadEmpty(size, channelfmt);
+        return ret;
+    }
 
     VGLIDX id() const { return m_texid; }
 
