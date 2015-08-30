@@ -1,9 +1,12 @@
 
 print("I'm preload.js!");
 
-var node_image: TextureImage = cast(Global.assetManager.named('TestUnit'), TextureImage);
-var node_texture: Texture = Texture.createWithPartialImage('TestUnit_aFrame',
-	node_image, new HPixel(835, 418), new HPixel(119, 93));
+var unitimg: TextureImage = cast(Global.assetManager.named('TestUnit'), TextureImage);
+var unittex: Texture = Texture.createWithPartialImage('TestUnit_aFrame',
+	unitimg, new HPixel(835, 418), new HPixel(119, 93));
+	
+var dotimg = cast(Global.assetManager.named('dot'), TextureImage);
+var dottex = Texture.createWithEntireImage('dot_image', dotimg);
 
 class TestScriptNode extends ScriptNode {
 
@@ -53,22 +56,42 @@ class TestScriptNode extends ScriptNode {
 	}
 }
 
-var sprite_node = StannumSpriteNode.create(root, node_texture);
-
 var new_node: TestScriptNode = createScriptNode.call(TestScriptNode, root);
 new_node.attach_to(root);
 Global.eventQueues.queueUpdate.add(new_node);
 
+var sprite_node = StannumSpriteNode.create(root, unittex);
 sprite_node.attach_to(new_node);
 sprite_node.set_position(new HAnyCoord(1024, 0, 0));
 Global.eventQueues.queuePaint.add(sprite_node);
 new_node.childNode = sprite_node;
 
+function createNode(parent: HNode, 
+	position: HAnyCoord) : StannumSpriteNode {
+	var ret = StannumSpriteNode.create(root, dottex);
+	ret.attach_to(parent);
+	Global.eventQueues.queuePaint.add(ret);
+	ret.set_position(position);
+	return ret;
+}
+
+createNode(new_node, new HAnyCoord(0, 0, 0));
+createNode(new_node, new HAnyCoord(8, 0, 0));
+createNode(new_node, new HAnyCoord(8, 8, 0));
+createNode(new_node, new HAnyCoord(0, 8, 0));
+
+createNode(new_node, new HAnyCoord(128, 0, 0));
+createNode(new_node, new HAnyCoord(256, 0, 0));
+
+createNode(new_node, new HAnyCoord(64, 64, 0));
+createNode(new_node, new HAnyCoord(128, 64, 0));
+createNode(new_node, new HAnyCoord(192, 64, 0));
+createNode(new_node, new HAnyCoord(256, 64, 0));
+
 root.invoke_event(HEvent.createShared());
 root.invoke_event(createScriptEvent<number>(0, 1));
 
-var phys_node = new HammerActorNode(root, Transform.create(new HAnyCoord(256, 0, 120),
-	 HQuaternion.createEuler(new HAnyCoord(0, 0, 0.5235))));
+var phys_node = new HammerActorNode(root, Transform.createPositioned(new HAnyCoord(192, 192, 96)));
 var t = HQuaternion.normalize(HQuaternion.createEuler(new HAnyCoord(0, 0, 0.5235)));
 print(t.x, ' ', t.y, ' ', t.z, ' ', t.w, ' ', HQuaternion.length(t));
 var phys_body = new HammerPrimitiveBody(Foundation.hammerFoundation.defaultMaterial);
@@ -86,7 +109,7 @@ class ListenerDataPhysicsAttach
 			var transform = cast(event, HammerTransformEvent).transform;
 			var parent = cast(this.listener.listenerParent.parent(), StannumSpriteNode);
 			parent.set_position(transform.position);
-			print(transform.position.z, ' ', cast(this.listener.listenerParent, HammerActorNode).mass);
+			// print(transform.position.z, ' ', cast(this.listener.listenerParent, HammerActorNode).mass);
 		}
 	}
 }

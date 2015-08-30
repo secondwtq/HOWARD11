@@ -127,25 +127,38 @@ class MappedVertexBuffer : public MappedVertexBufferBase {
 enum CommandType {
     CDefault,
     CTest,
+    CDuneTerrain
+};
+
+enum DispatchCommandType {
+    DDefault,
+    DSpriteDispatch,
+    DDuneTerrain
 };
 
 class StannumRenderer;
 
 class StannumCommand {
+public:
 
-    public:
+    virtual ~StannumCommand() { }
+    virtual CommandType cmd_type() const { return CommandType::CDefault; }
+    virtual void execute(StannumRenderer *renderer) = 0;
 
-    virtual ~StannumCommand() { };
+};
 
-    virtual CommandType cmd_type() { return CommandType::CDefault; }
+class StannumDispatchCommand {
+public:
 
+    virtual ~StannumDispatchCommand() { }
+    virtual DispatchCommandType commandType() const {
+        return DispatchCommandType::DDefault; }
     virtual void execute(StannumRenderer *renderer) = 0;
 
 };
 
 class RenderQueue {
-
-    public:
+public:
 
     ~RenderQueue() {
         // RenderQueue must be cleared
@@ -155,6 +168,9 @@ class RenderQueue {
     void push(StannumCommand *command) {
         commands.push_back(command); }
 
+    inline void pushDispatchCommand(std::shared_ptr<StannumDispatchCommand> cmd) {
+        dispatch_commands.push_back(cmd); }
+
     void clear() {
         for (auto cmd : commands) {
             delete cmd; }
@@ -162,14 +178,15 @@ class RenderQueue {
     }
 
     std::list<StannumCommand *> commands;
+    std::vector<std::shared_ptr<StannumDispatchCommand>> dispatch_commands;
 };
 
-class StannumRenderer {
+struct DataSprite;
 
-    public:
+class StannumRenderer {
+public:
 
     void init();
-
     void destroy();
 
     void render_dispatch(std::shared_ptr<RenderQueue> queue) {
@@ -179,22 +196,24 @@ class StannumRenderer {
         glClear(GL_COLOR_BUFFER_BIT);
         for (auto cmd : queue->commands) {
             cmd->execute(this); }
+        for (auto cmd : queue->dispatch_commands) {
+            cmd->execute(this); }
         queue->clear();
-        m_shared_vb.clear();
     }
 
     inline ShaderCache *shaders() { return &this->m_shader_cache; }
 
-    private:
+private:
 
+    friend class CommandSprite;
+    friend class DispatchCommandSprite;
+    std::vector<DataSprite *> m_sprites;
     SharedVertexBuffer m_shared_vb;
     ShaderCache m_shader_cache;
 
 };
 
 }
-
-
 }
 
 #endif // HOWARD11_STANNUM_HXX

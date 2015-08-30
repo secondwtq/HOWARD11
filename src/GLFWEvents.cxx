@@ -29,16 +29,8 @@ void error_callback(int error, const char *desc) {
     printf("%s\n", desc); }
 
 void key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
-    if (action == GLFW_PRESS) {
-        if (key == GLFW_KEY_ESCAPE)
-            glfwSetWindowShouldClose(window, GL_TRUE);
-        if (key == GLFW_KEY_UP) {
-            glm::vec3 offset = { 1, 1, 0 };
-            offset *= 32;
-            Howard::Dolly::IsometricCamera::instance->look_at += offset;
-            Howard::Dolly::IsometricCamera::instance->pos += offset;
-        }
-    }
+    if (action == GLFW_PRESS && key == GLFW_KEY_ESCAPE) {
+        glfwSetWindowShouldClose(window, GL_TRUE); }
 
     Facer::InputEvent e = Facer::Port::GLFW::createEventKey(window, key, scancode, action, mods);
     std::shared_ptr<Howard::InputEvent> event(Howard::InputEvent::createShared(e));

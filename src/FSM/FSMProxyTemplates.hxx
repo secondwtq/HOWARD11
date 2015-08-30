@@ -36,6 +36,10 @@ template<>
 inline const std::string& convert_to_string(const int& src) {
 	return std::move(std::to_string(src)); }
 
+template<>
+inline const std::string& convert_to_string(const unsigned char& src) {
+	return std::move(std::to_string(src)); }
+
 }
 
 }

@@ -9,6 +9,7 @@
 #ifndef __MarXsCube__FSM__
 #define __MarXsCube__FSM__
 
+#include "Common.hxx"
 #include "FSMCommon.hxx"
 
 #include <stdio.h>
@@ -148,6 +149,12 @@ inline const std::string& convert_to_string(const std::string& src) {
 template<typename T>
 inline FSMLoggerProxy& operator<<(FSMLoggerProxy& proxy, const T& src) {
 	return proxy.log(convert_to_string(src).c_str());
+}
+
+inline FSMLoggerProxy& operator<<(FSMLoggerProxy& proxy, const LoggerEndline& src) {
+	proxy.log(HO_ENDLINE);
+	proxy.reset();
+    return proxy;
 }
 
 // 150202: fix behavior of char array (pre-defined).

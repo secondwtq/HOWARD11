@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(HOWARD11)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
 
 if(MSVC)
     message("Compiling with MSVC, well maybe it's unsupported")
@@ -39,26 +39,39 @@ function(prepend var prefix)
     set(${var} "${listVar}" PARENT_SCOPE)
 endfunction(prepend)
 
-set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx FSMCommon.hxx FSMLogger.hxx FSMHelper.hxx)
+set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx
+    FSMCommon.hxx FSMLogger.hxx FSMHelper.hxx)
 
 set(SOURCE_VERDANDI GLCommon.hxx GLFoundation.hxx GLFoundation.cxx
     GLShader.hxx GLShader.cxx GLShaderExt.hxx
-    GLShaderExtDef.hxx)
+    GLShaderExtDef.hxx GLVertexBuffer.hxx)
 
 set(SOURCE_STANNUM StannumCommon.hxx Stannum.hxx Stannum.cxx StannumShaderCache.hxx
-    StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx StannumSprite.hxx)
+    StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx StannumSprite.hxx
+    StannumAtlasNode.cxx StannumAtlasNode.hxx StannumSpriteShader.cxx StannumSpriteShader.hxx)
 
 set(SOURCE_DWIGHT HowardBase.hxx Node.hxx Node.cxx Handle.hxx
-RootNode.hxx HandleManager.hxx SceneManager.hxx ScriptNode.hxx
-StannumSpriteNode.hxx Event.hxx ScriptEvent.hxx InputEvent.hxx
-Observers.hxx ObserversDef.hxx EventAndObservers.cxx
-DwightScript.cxx Foundation.hxx)
+    RootNode.hxx HandleManager.hxx SceneManager.hxx ScriptNode.hxx
+    StannumSpriteNode.hxx Event.hxx ScriptEvent.hxx InputEvent.hxx
+    Observers.hxx ObserversDef.hxx EventAndObservers.cxx
+    DwightScript.cxx Foundation.hxx)
 
-set(SOURCE_FACERCORE FacerEvent.hxx FacerEventKey.hxx FacerEvent.cxx FacerEventPortGLFW.hxx FacerEventPortGLFW.cxx)
+set(SOURCE_FACERCORE FacerEvent.hxx FacerEventKey.hxx FacerEvent.cxx
+    FacerEventPortGLFW.hxx FacerEventPortGLFW.cxx)
 
-set(SOURCE_THIRDPT howardgl.hxx stb.cxx mozjs.hxx physx.hxx)
+set(SOURCE_THIRDPT howardgl.hxx stb.cxx mozjs.hxx physx.hxx stb_image.hxx stb_image_resize.hxx)
 
 set(SOURCE_MISC Transform.hxx Transform.cxx hassert.hxx AtTheVeryBeginning.hxx AtTheVeryBeginning.cxx)
+
+set(SOURCE_HAMMER Hammer.cxx HammerActorNode.cxx HammerTransform.cxx HammerGlue.cxx
+    HammerPrimitiveBody.cxx HammerHeightfield.cxx Hammer.hxx HammerActorNode.hxx
+    HammerTransform.hxx HammerGlue.hxx HammerPrimitiveBody.hxx HammerPreDef.hxx
+    HammerHeightfield.hxx)
+
+set(SOURCE_DUNE Dune.cxx DuneShader.cxx Dune.hxx DuneCommon.hxx DuneShader.hxx)
+
+set(SOURCE_GUARDIAN Guardian.cxx GuardianCommon.cxx GuardianShader.cxx Guardian.hxx
+    GuardianCommon.hxx GuardianShader.hxx)
 
 prepend(SOURCE_FSM "FSM" ${SOURCE_FSM})
 prepend(SOURCE_VERDANDI Verdandi ${SOURCE_VERDANDI})
@@ -67,16 +80,15 @@ prepend(SOURCE_DWIGHT Dwight ${SOURCE_DWIGHT})
 prepend(SOURCE_FACERCORE FacerCore ${SOURCE_FACERCORE})
 prepend(SOURCE_THIRDPT thirdpt ${SOURCE_THIRDPT})
 prepend(SOURCE_MISC Misc ${SOURCE_MISC})
+prepend(SOURCE_HAMMER Hammer ${SOURCE_HAMMER})
+prepend(SOURCE_DUNE Dune ${SOURCE_DUNE})
+prepend(SOURCE_GUARDIAN Guardian ${SOURCE_GUARDIAN})
 
 set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} ${SOURCE_DWIGHT}
-    ${SOURCE_FACERCORE} ${SOURCE_THIRDPT} ${SOURCE_MISC})
+    ${SOURCE_FACERCORE} ${SOURCE_THIRDPT} ${SOURCE_MISC} ${SOURCE_HAMMER} ${SOURCE_DUNE} ${SOURCE_GUARDIAN})
 
 set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx src/GLFWEvents.hxx src/GLFWEvents.cxx
-        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx
-        src/Hammer/Hammer.cxx src/Hammer/Hammer.hxx src/Hammer/HammerActorNode.cxx src/Hammer/HammerActorNode.hxx
-        src/Hammer/HammerPreDef.hxx src/Hammer/HammerTransform.cxx src/Hammer/HammerTransform.hxx src/Hammer/HammerGlue.cxx
-        src/Hammer/HammerGlue.hxx src/Hammer/HammerPrimitiveBody.cxx src/Hammer/HammerPrimitiveBody.hxx
-        src/Dune/Dune.cxx src/Dune/Dune.hxx src/Dune/DuneShader.cxx src/Dune/DuneShader.hxx src/Dune/DuneCommon.hxx)
+        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Verdandi/GLVertexBufferExt.hxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
@@ -93,7 +105,6 @@ if(APPLE)
     find_library(FRAMEWORK_GL OpenGL)
     find_library(FRAMEWORK_IOKIT IOKit)
     find_library(FRAMEWORK_CORE_VIDEO CoreVideo)
-    # mark_as_advanced(FRAMEWORK_COCOA)
     set(EXTRA_LIBS_APPLE ${FRAMEWORK_COCOA} ${FRAMEWORK_GL} ${FRAMEWORK_IOKIT}
         ${FRAMEWORK_CORE_VIDEO})
 

@@ -39,6 +39,8 @@ enum HowardNodeType {
     NRootNode = 1,
     NScriptNode = 2,
     NStannumSpriteNode = 3,
+    NHammerActorNodeStatic = 4,
+    NHammerActorNode = 5
 
 };
 

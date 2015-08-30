@@ -26,6 +26,9 @@ void gl_init();
 
 void clear_depth();
 
+template <typename T>
+class VertexBufferSingle;
+
 }
 
 }

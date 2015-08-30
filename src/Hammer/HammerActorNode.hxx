@@ -1,10 +1,12 @@
 //
-// Created by secondwtq <lovejay-lovemusic@outlook.com> 2015/08/23.
+// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
+//
+// Date: 2015-08-23
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
-// This file is part of ISDCNext.
+// This file is part of the HOWARD11 Game Engine.
 //
-// We have always treaded the borderland.
+// WE ARE STANDING ON THE EDGE.
 //
 
 #ifndef HOWARD11_HAMMERACTORNODE_HXX
@@ -19,21 +21,59 @@
 namespace Howard {
 namespace Hammer {
 
+// may be just for CCT.
 enum ConstructInternal {
-    CONSTRUCT_INTERNAL
+    CONSTRUCT_INTERNAL };
+
+class HammerActorNodeBase : public HNode {
+public:
+
+    HammerActorNodeBase(RootNode *scene, const Transform& transform)
+            : HNode(scene) { }
+
+    void addToScene(HammerScene *scene);
+    void setTransform(const Transform& transform);
+
+    // for scripts ...
+    virtual physx::PxRigidActor *actor() {
+        return nullptr; };
+    virtual Transform transform() const { return { }; };
 };
 
-class HammerActorNode : public HNode {
+class HammerActorNodeStatic : public HammerActorNodeBase {
+public:
+
+    HammerActorNodeStatic(RootNode *scene, const Transform& transform);
+    HowardNodeType node_typeid() const override {
+        return HowardNodeType::NHammerActorNodeStatic; }
+    const char *node_type() const override {
+        return HammerActorNodeStatic::m_node_type; }
+    static constexpr const char m_node_type[] = "HammerActorNodeStatic";
+
+    physx::PxRigidActor *actor() override;
+    inline Transform transform() const override {
+        return m_transform; }
+
+private:
+
+    Transform m_transform;
+    physx::PxRigidStatic *m_actor;
+};
+
+class HammerActorNode : public HammerActorNodeBase {
 public:
 
     HammerActorNode(RootNode *scene, const Transform& transform);
+    HowardNodeType node_typeid() const override {
+        return HowardNodeType::NHammerActorNode; }
+    const char *node_type() const override {
+        return HammerActorNode::m_node_type; }
+    static constexpr const char m_node_type[] = "HammerActorNode";
 
-    void addToScene(HammerScene *scene);
-
-    inline physx::PxRigidDynamic *actor() {
+    physx::PxRigidActor* actor() override;
+    Transform transform() const override;
+    inline physx::PxRigidDynamic *actorDynamic() {
         return m_actor; }
-
-    Transform transform() const;
 
     void addForce(const HAnyCoord& force);
     void addImpulse(const HAnyCoord& impulse);
@@ -62,7 +102,6 @@ private:
 
     friend class HammerScene;
     Transform m_transform;
-
 };
 
 class HammerTransformEvent : public HEvent {

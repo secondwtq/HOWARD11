@@ -1,10 +1,12 @@
 //
-// Created by secondwtq <lovejay-lovemusic@outlook.com> 2015/08/23.
+// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
+//
+// Date: 2015-08-23
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
-// This file is part of ISDCNext.
+// This file is part of the HOWARD11 Game Engine.
 //
-// We have always treaded the borderland.
+// WE ARE STANDING ON THE EDGE.
 //
 
 #include "HammerPrimitiveBody.hxx"
@@ -32,13 +34,17 @@ PrimitiveBody::PrimitiveBody() :
         PrimitiveBody(Foundation.hammerFoundation().defaultMaterial()) { }
 
 void PrimitiveHelper::attachPrimitivesToActor(
-        const PrimitiveBody& body, HammerActorNode *node) {
+        const PrimitiveBody& body, HammerActorNodeBase *node) {
     for (size_t i = 0; i < body.numberOfShapes(); i++) {
         std::unique_ptr<physx::PxGeometry> geo = Glue::convertPrimitive(*body.shape(i));
         physx::PxShape *shape = node->actor()->createShape(*geo.get(), *body.material()->material());
         shape->setLocalPose(Glue::pxTransform(body.shape(i)->transform));
     }
-    physx::PxRigidBodyExt::updateMassAndInertia(*node->actor(), 1);
+
+    if (node->node_typeid() == HowardNodeType::NHammerActorNode) {
+        physx::PxRigidBodyExt::updateMassAndInertia(*reinterpret_cast
+                <HammerActorNode *>(node)->actorDynamic(), 1);
+    }
 }
 
 }

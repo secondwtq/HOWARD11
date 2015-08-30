@@ -12,21 +12,28 @@
 #ifndef HOWARD11_STANNUMCOMMON_HXX
 #define HOWARD11_STANNUMCOMMON_HXX
 
-namespace Howard {
+#include "Common.hxx"
 
+namespace Howard {
 namespace Stannum {
 
 enum ShaderType {
 
     CommonSprite = 0,
     DuneTerrain = 1,
-    DuneCache = 2,
+    Guardian = 2,
     End,
 
 };
 
-}
+struct VertFormatSprite {
+    glm::vec3 position;
+    glm::vec3 texcoord;
+    glm::vec2 location;
+    glm::vec4 multiply;
+};
 
+}
 }
 
 #endif // HOWARD11_STANNUMCOMMON_HXX

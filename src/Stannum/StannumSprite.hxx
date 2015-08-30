@@ -15,41 +15,10 @@
 #include "Stannum.hxx"
 #include "StannumTexture.hxx"
 
-#include "Verdandi/GLShader.hxx"
-#include "Verdandi/GLShaderExt.hxx"
-
 #include <glm/glm.hpp>
 
 namespace Howard {
 namespace Stannum {
-
-struct VertFormatSprite {
-
-    glm::vec3 position;
-    glm::vec3 texcoord;
-    glm::vec2 location;
-    glm::vec4 multiply;
-
-};
-
-class SpriteShader : public Verdandi::gl_shader_ext {
-    public:
-
-    ATTR_OBJECT(A, Stannum::VertFormatSprite);
-
-    void init_shader();
-    void attribute_attr(size_t sid);
-    void disable_attributes();
-
-    DEF_ATTRIBUTE(position);
-    DEF_ATTRIBUTE(texcoord);
-    DEF_ATTRIBUTE(location);
-    DEF_ATTRIBUTE(multiply);
-
-    DEF_UNIFORM(mvp);
-    DEF_SAMPLER(texture_major);
-
-};
 
 struct DataSprite {
 
@@ -78,13 +47,15 @@ struct DataSprite {
     }
 
     void set_position_and_size(const glm::vec2& location, const glm::vec2& size) {
-        // glm::vec2 size_ = size / (float) 2.0;
-        data[0].position = data[5].position = glm::vec3(location.x - size.x, location.y -
-                                                                             size.y, 0);
-        data[4].position = glm::vec3(location.x + size.x, location.y - size.y, 0);
-        data[2].position = data[3].position = glm::vec3(location.x + size.x, location.y +
-                                                                             size.y, 0);
-        data[1].position = glm::vec3(location.x - size.x, location.y + size.y, 0);
+        glm::vec2 size_ = size / (float) 2.0;
+        data[0].position = data[5].position = glm::vec3(location.x - size_.x,
+                location.y - size_.y, 0);
+        data[4].position = glm::vec3(location.x + size_.x,
+                location.y - size_.y, 0);
+        data[2].position = data[3].position = glm::vec3(location.x + size_.x,
+                location.y + size_.y, 0);
+        data[1].position = glm::vec3(location.x - size_.x,
+                location.y + size_.y, 0);
     }
 
     void set_color(const glm::vec4& color) {
@@ -95,24 +66,25 @@ struct DataSprite {
 };
 
 class CommandSprite : public StannumCommand {
-
     friend class StannumRenderer;
-
-    public:
-
-    CommandSprite(DataSprite *data) : m_data(data) { }
-
-    virtual CommandType cmd_type() { return CommandType::CTest; }
-
+public:
+    CommandSprite(DataSprite *data)
+            : m_data(data) { }
+    CommandType cmd_type() const override {
+        return CommandType::CTest; }
     virtual void execute(StannumRenderer *renderer) override;
-
-    private:
-
+private:
     DataSprite *m_data = nullptr;
-
-    public:
+public:
     static MappedVertexBuffer<VertFormatSprite> *m_buf;
+};
 
+class DispatchCommandSprite : public StannumDispatchCommand {
+public:
+    DispatchCommandSprite() { }
+    DispatchCommandType commandType() const override {
+        return DispatchCommandType::DSpriteDispatch; }
+    virtual void execute(StannumRenderer *renderer) override;
 };
 
 }

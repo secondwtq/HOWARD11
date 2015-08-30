@@ -12,18 +12,14 @@
 #ifndef HOWARD11_STANNUMTEXTURE_HXX
 #define HOWARD11_STANNUMTEXTURE_HXX
 
-#include <string.h>
-#include <cstdint>
+#include <stdint.h>
 #include <vector>
 #include <string>
 
 #include "Common.hxx"
 #include "Debug.hxx"
 #include <glm/glm.hpp>
-#include <stb/stb_image.h>
-#include <utility>
 
-#include "FSM/FSMHelper.hxx"
 #include "Asset.hxx"
 #include "Verdandi/GLCommon.hxx"
 
@@ -31,10 +27,7 @@
 #define HO_UPOS_DEFAULT (glm::u16vec2(-1, -1))
 
 namespace Howard {
-
 namespace Verdandi {
-
-using namespace FSMHelper;
 
 enum ImageChannelType {
     INONE,
@@ -66,23 +59,11 @@ public:
         }
     }
 
-    static unsigned int stbTypeForChannel(ImageChannelType channel) {
-        switch (channel) {
-            case IRGBA:
-                return STBI_rgb_alpha;
-            case IRGB:
-                return STBI_rgb;
-            case IGRAY:
-                return STBI_grey;
-            case IGRAYA:
-                return STBI_grey_alpha;
-            default:
-                return 0;
-        }
-    }
-
+    static unsigned int stbTypeForChannel(ImageChannelType channel);
     static VGLIDX glEnumForChannelFormat(ImageChannelType channel);
 };
+
+class TextureImage;
 
 class Image {
 
@@ -107,85 +88,68 @@ class Image {
 
     bool ok() const { return !(m_image.empty()); }
 
-    void loadFromMemory(const RawDataT *data, size_t len,
-            ImageChannelType channel_fmt, ImageSourceFormat format) {
-        assert(data); assert(len);
-        assert(m_image.empty());
+    void loadFromImage(const Image& other);
+    void loadFromImageAndResize(const Image& other, const HPixel& size);
+    void loadFromMemory(const RawDataT *data, size_t len, ImageChannelType channel_fmt,
+                ImageSourceFormat format = ImageSourceFormat::FPNG);
+    void load_from_mem(const RawDataT *data, size_t len);
+    void loadFromTextureImage(const TextureImage& other);
 
-        int width, height, channels;
-        RawDataT *decoded = stbi_load_from_memory(data, len,
-                &width, &height, &channels, ImageHelper::stbTypeForChannel(channel_fmt));
-
-        if (decoded) {
-            size = { width, height };
-            m_image.resize(width * height * channels);
-            memcpy(m_image.data(), decoded, m_image.size() * sizeof(RawDataT));
-            stbi_image_free(decoded);
-        } else {
-            log("Verdandi", Warning) << "Failed to load Image " << m_name << ": " <<
-            stbi_failure_reason() << rn;
-        }
-    }
-
-    void load_from_mem(const RawDataT *data, size_t len) {
-        assert(data); assert(len);
-        assert(m_image.empty());
-
-        int width, height, channels;
-        m_channel_type = IRGBA;
-        RawDataT *decoded = stbi_load_from_memory(data, len,
-            &width, &height, &channels, STBI_rgb_alpha);
-
-        if (decoded) {
-            size = { width, height };
-            m_image.resize(width * height * 4);
-            memcpy(m_image.data(), decoded, m_image.size() * sizeof(RawDataT));
-            stbi_image_free(decoded);
-        } else {
-            log("Verdandi", Warning) << "Failed to load Image " << m_name << ": " <<
-                    stbi_failure_reason() << rn;
-        }
-    };
+    void resize(const HPixel& size);
+    void scale(const HScale& val) {
+        ASSERT(val.x > 0 && val.y > 0);
+        this->resize({ size.x * val.x, size.y * val.y }); }
 
     const RawDataT *ptr() const { return m_image.data(); }
 
     ImageChannelType channelFormat() const {
         return m_channel_type; }
 
-    private:
+    inline void reset() {
+        m_channel_type = INONE;
+        size = { 0, 0 };
+        m_image.clear();
+    }
+
+private:
 
     ImageChannelType m_channel_type = INONE;
     std::string m_name;
     std::vector<RawDataT> m_image;
-
 };
 
 class TextureImage : public Asset {
-
-    public:
+public:
 
     TextureImage(const std::string& name);
+    ~TextureImage();
 
     const char *asset_type() const override { return TextureImage::m_asset_type; }
     static constexpr const char m_asset_type[] = "TextureImage";
 
-    glm::u16vec2 size;
+    HPixel size;
 
     void loadFromImage(const Image& image);
+    void loadFromTextureImage(const TextureImage& image);
+    void loadEmpty(const HPixel& size, ImageChannelType channelfmt);
 
     VGLIDX id() const { return m_texid; }
 
     ImageChannelType channelFormat() const {
         return m_channel_type; }
 
+    inline bool ok() const {
+        return m_channel_type != INONE; }
+
 private:
+
+    void cleanupForReload();
 
     ImageChannelType m_channel_type = INONE;
     VGLIDX m_texid;
 };
 
 class Texture : public Asset {
-
 public:
 
     Texture(const std::string& name, const TextureImage *parent) :

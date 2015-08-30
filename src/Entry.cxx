@@ -1,5 +1,7 @@
 //
-// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love. 2015-05-22.
+// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
+//
+// Date: 2015-05-22
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
 // This file is part of the HOWARD11 Game Engine.
@@ -43,6 +45,9 @@
 #include "Hammer/Hammer.hxx"
 #include "Hammer/HammerActorNode.hxx"
 #include "Hammer/HammerPrimitiveBody.hxx"
+#include "Hammer/HammerHeightfield.hxx"
+
+#include "Dune/Dune.hxx"
 
 #include <string>
 #include <memory>
@@ -55,7 +60,8 @@ FoundationInstance Foundation;
 }
 
 Howard::Stannum::StannumRenderer renderer;
-Howard::Verdandi::Texture *texture;
+
+Howard::Dune::DuneTerrain *terrain;
 
 #define SPD_DEF(target) decltype(target), (target)
 
@@ -338,21 +344,34 @@ int main() {
             class_info<PrimitiveHelper>::inst_wrapper::set(new
                     spd::class_info<PrimitiveHelper>(rt, "HammerPrimitiveHelper"));
             klass<PrimitiveHelper>().define(global)
-                    .static_func<SPD_DEF(PrimitiveHelper::attachPrimitivesToActor)>("attachPrimitivesToActor");
+                    .static_func<SPD_DEF(PrimitiveHelper::attachPrimitivesToActor)>("attachPrimitivesToActor")
+                    .static_func<SPD_DEF(PrimitiveHelper::attachHeightfieldToActor)>("attachHeightfieldToActor");
+
+            // class HammerActorNodeBase : HNode - Hammer/HammerActorNode.hxx
+            class_info<HammerActorNodeBase>::inst_wrapper::set(new
+                    class_info<HammerActorNodeBase>(rt, "HammerActorNodeBase"));
+            klass<HammerActorNodeBase>().inherits<HNode, UseCXXLifetime>(
+                    global, argpack<RootNode *, const Transform&>())
+                    .method<SPD_DEF(&HammerActorNodeBase::addToScene)>("addToScene")
+                    .accessor<Transform, &HammerActorNodeBase::transform>("transform");
+
+            // class HammerActorNodeStatic : HammerActorNodeBase - Hammer/HammerActorNode.hxx
+            class_info<HammerActorNodeStatic>::inst_wrapper::set(new
+                class_info<HammerActorNodeStatic>(rt, "HammerActorNodeStatic"));
+            klass<HammerActorNodeStatic>().inherits<HammerActorNodeBase, UseCXXLifetime>(
+                    global, argpack<RootNode *, const Transform&>());
 
             // class HammerActorNode : HNode - Hammer/HammerActorNode.hxx
             class_info<HammerActorNode>::inst_wrapper::set(new
                     spd::class_info<HammerActorNode>(rt, "HammerActorNode"));
-            klass<HammerActorNode>().inherits<HNode, spd::UseCXXLifetime>(
+            klass<HammerActorNode>().inherits<HammerActorNodeBase, spd::UseCXXLifetime>(
                     global, argpack<RootNode *, const Transform&>())
-                    .method<SPD_DEF(&HammerActorNode::addToScene)>("addToScene")
                     .method<SPD_DEF(&HammerActorNode::addForce)>("addForce")
                     .method<SPD_DEF(&HammerActorNode::addImpulse)>("addImpulse")
                     .method<SPD_DEF(&HammerActorNode::addAcceleration)>("addAcceleration")
                     .method<SPD_DEF(&HammerActorNode::setVelocity)>("setVelocity")
                     .accessor<float, &HammerActorNode::mass>("mass")
-                    .accessor<float, &HammerActorNode::invMass>("invMass")
-                    .accessor<Transform, &HammerActorNode::transform>("transform");
+                    .accessor<float, &HammerActorNode::invMass>("invMass");
 
             // class HammerTransformEvent : HEvent - Hammer/HammerActorNode.hxx
             class_info<HammerTransformEvent>::inst_wrapper::set(new
@@ -360,6 +379,12 @@ int main() {
             klass<HammerTransformEvent>().inherits<HEvent>(global,
                             argpack<HammerActorNode *, const Transform&>())
                     .property<Transform, &HammerTransformEvent::transform>("transform");
+
+            class_info<HammerHeightfield>::inst_wrapper::set(new
+                    class_info<HammerHeightfield>(rt, "HammerHeightfield"));
+            klass<HammerHeightfield>().define(global)
+                    .method<SPD_DEF(&HammerHeightfield::setDataImage)>("setDataImage")
+                    .method<SPD_DEF(&HammerHeightfield::generateHeightfield)>("generateHeightfield");
         }
 
         // class ScriptEventBase : Event - ScriptEvent.hxx
@@ -467,7 +492,7 @@ int main() {
     hammer_scene->initialize(&Howard::Foundation.hammerFoundation(),
             Howard::Hammer::HammerSceneCreateArgs { });
     Howard::Foundation.setMainPhysScene(hammer_scene);
-    hammer_scene->createGroundPlane();
+//    hammer_scene->createGroundPlane();
 
     Howard::Foundation.eventQueues().initialize();
 
@@ -506,10 +531,15 @@ int main() {
     renderer.init();
 
     Howard::Verdandi::TextureImage *textureimage = new Howard::Verdandi::TextureImage("node");
+    Howard::Verdandi::TextureImage *textureimage_dot = new Howard::Verdandi::TextureImage("dot");
     Howard::Verdandi::TextureImage *textureimage_TestUnit = new Howard::Verdandi::TextureImage("TestUnit");
+    std::shared_ptr<Howard::Verdandi::TextureImage> textureimage_heightmap(
+            new Howard::Verdandi::TextureImage("duneheightmap"));
+    std::shared_ptr<Howard::Verdandi::TextureImage> textureimage_dunepretex(
+            new Howard::Verdandi::TextureImage("dunepretex"));
     {
         Howard::Verdandi::Image image_t("load");
-        std::string buf = readfile("assets/buildingbody.png");
+        std::string buf = readfile("assets/node.png");
         image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length());
         textureimage->loadFromImage(image_t);
     }
@@ -519,7 +549,37 @@ int main() {
         image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length());
         textureimage_TestUnit->loadFromImage(image_t);
     }
-    texture = new Howard::Verdandi::Texture("node_tex", textureimage, { 133, 154 }, { 80, 71 });
+    {
+        Howard::Verdandi::Image image_t("TestDotImage");
+        std::string buf = readfile("assets/dot.png");
+        image_t.load_from_mem(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length());
+        textureimage_dot->loadFromImage(image_t);
+    }
+    {
+        Howard::Verdandi::Image image_t("heightmap");
+        std::string buf = readfile("assets/heightmap.png");
+        image_t.loadFromMemory(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length(),
+                Howard::Verdandi::ImageChannelType::IGRAY);
+        textureimage_heightmap->loadFromImage(image_t);
+    }
+    {
+        Howard::Verdandi::Image image_t("pretex");
+        std::string buf = readfile("assets/dune_pretex.png");
+        image_t.loadFromMemory(reinterpret_cast<const Howard::RawDataT *>(buf.c_str()), buf.length(),
+                Howard::Verdandi::ImageChannelType::IRGB);
+        textureimage_dunepretex->loadFromImage(image_t);
+    }
+
+    terrain = new Howard::Dune::DuneTerrain(HPixel(8, 8));
+    terrain->setHeightmap(textureimage_heightmap);
+    terrain->m_caches[0]->textures()[0]->loadFromTextureImage(*textureimage_dunepretex.get());
+    Howard::Hammer::HammerActorNodeStatic *ground = new
+            Howard::Hammer::HammerActorNodeStatic(&Howard::Foundation.rootNode(), { });
+    Howard::Hammer::HammerHeightfield *field = new Howard::Hammer::HammerHeightfield();
+    field->setDataImage(terrain->m_scaled_height);
+    field->generateHeightfield();
+    Howard::Hammer::PrimitiveHelper::attachHeightfieldToActor(*field, ground, terrain->heightfieldScale());
+    ground->addToScene(&Howard::Foundation.mainPhysScene());
 
     {
         JSAutoRequest req(Howard::Foundation.JSRuntime());
@@ -530,11 +590,6 @@ int main() {
         JS_EvaluateScript(Howard::Foundation.JSRuntime(), Howard::Foundation.JSGlobal(), buf.c_str(),
             (unsigned int) buf.length(), "preload.js", 0, &ret_preload);
     }
-
-    Howard::StannumSpriteNode *sprite = new Howard::StannumSpriteNode(&Howard::Foundation.rootNode(), texture);
-    sprite->set_position({ 512, 256, 0 });
-    sprite->attach_to({ &r });
-    Howard::Foundation.eventQueues().queuePaint()->add(sprite);
 
     log("GLManager", L::Message) << "Context Initialized, entering loop (OpenGL " << glGetString(GL_VERSION) << ") ..." << rn;
 
@@ -559,10 +614,37 @@ int main() {
             glfwPollEvents();
         }
 
-        Dolly::IsometricCamera::instance->update();
-        std::shared_ptr<Stannum::RenderQueue> queue(new Stannum::RenderQueue());
-        Foundation.eventQueues().queuePaint()->setRenderQueue(queue).invoke();
+        if (glfwGetKey(window, GLFW_KEY_UP) == GLFW_PRESS) {
+            glm::vec3 offset = { -1, -1, 0 };
+            offset *= 4;
+            Howard::Dolly::IsometricCamera::instance->look_at += offset;
+            Howard::Dolly::IsometricCamera::instance->pos += offset;
+        }
+        if (glfwGetKey(window, GLFW_KEY_DOWN) == GLFW_PRESS) {
+            glm::vec3 offset = { 1, 1, 0 };
+            offset *= 4;
+            Howard::Dolly::IsometricCamera::instance->look_at += offset;
+            Howard::Dolly::IsometricCamera::instance->pos += offset;
+        }
+        if (glfwGetKey(window, GLFW_KEY_LEFT) == GLFW_PRESS) {
+            glm::vec3 offset = { -1, 1, 0 };
+            offset *= 4;
+            Howard::Dolly::IsometricCamera::instance->look_at += offset;
+            Howard::Dolly::IsometricCamera::instance->pos += offset;
+        }
+        if (glfwGetKey(window, GLFW_KEY_RIGHT) == GLFW_PRESS) {
+            glm::vec3 offset = { 1, -1, 0 };
+            offset *= 4;
+            Howard::Dolly::IsometricCamera::instance->look_at += offset;
+            Howard::Dolly::IsometricCamera::instance->pos += offset;
+        }
 
+        Dolly::IsometricCamera::instance->update();
+        std::shared_ptr<Stannum::RenderQueue> queue = std::make_shared<Stannum::RenderQueue>();
+        Foundation.eventQueues().queuePaint()->setRenderQueue(queue).invoke();
+        queue->pushDispatchCommand(std::make_shared<Howard::Dune::DispatchCommandDuneTerrain>(
+                terrain, Howard::Dolly::IsometricCamera::instance));
+        queue->pushDispatchCommand(std::make_shared<Stannum::DispatchCommandSprite>());
         renderer.render_dispatch(queue);
 
         glfwSwapBuffers(window);

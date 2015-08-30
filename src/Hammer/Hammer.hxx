@@ -1,10 +1,12 @@
 //
-// Created by secondwtq <lovejay-lovemusic@outlook.com> 2015/08/22.
+// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
+//
+// Date: 2015-08-22
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
-// This file is part of ISDCNext.
+// This file is part of the HOWARD11 Game Engine.
 //
-// We have always treaded the borderland.
+// WE ARE STANDING ON THE EDGE.
 //
 
 #ifndef HOWARD11_HAMMER_HXX
@@ -23,6 +25,9 @@ public:
 
     inline physx::PxPhysics& physics() {
         return *m_physics; }
+
+    inline physx::PxCooking& cooking() {
+        return *m_cooking; }
 
     inline Material *defaultMaterial() {
         return m_default_mat; }

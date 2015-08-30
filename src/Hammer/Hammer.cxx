@@ -1,10 +1,12 @@
 //
-// Created by secondwtq <lovejay-lovemusic@outlook.com> 2015/08/22.
+// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
+//
+// Date: 2015-08-22
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
-// This file is part of ISDCNext.
+// This file is part of the HOWARD11 Game Engine.
 //
-// We have always treaded the borderland.
+// WE ARE STANDING ON THE EDGE.
 //
 
 #include "Hammer.hxx"
@@ -60,7 +62,7 @@ void HammerScene::initialize(HammerFoundation *foundation,
     assert(m_dispatcher);
     physx::PxTolerancesScale scale;
     physx::PxSceneDesc desc(scale);
-    desc.gravity = physx::PxVec3(args.gravity.x, args.gravity.y, args.gravity.z);
+    desc.gravity = Glue::pxCoord(args.gravity);
     desc.filterShader = physx::PxDefaultSimulationFilterShader;
     desc.cpuDispatcher = m_dispatcher;
     desc.flags |= PxSceneFlag::eENABLE_ACTIVETRANSFORMS;

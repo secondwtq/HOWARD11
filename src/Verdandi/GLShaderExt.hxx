@@ -61,6 +61,7 @@ class gl_shader_ext : public gl_shader {
 
 #define SET_UNIFORM4(shader, name, glmv) (glUniform4f((shader).NAME_UNIFORM(name), (glmv).x, (glmv).y, (glmv).z, (glmv).w))
 
+#define SET_UNIFORM2P(shader, name, glmv) (SET_UNIFORM2(*shader, name, glmv))
 #define SET_UNIFORM3P(shader, name, glmv) (SET_UNIFORM3(*shader, name, glmv))
 
 #define SET_UNIFORMAT4(shader, name, glmm) (glUniformMatrix4fv((shader).NAME_UNIFORM(name), 1, GL_FALSE, &((glmm)[0][0])))

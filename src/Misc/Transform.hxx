@@ -24,20 +24,22 @@ class Camera {
 
     public:
 
+    Camera() : Camera(1.0f) { }
+    Camera(float scalefac) :
+            scale_factor(scalefac) { }
+
     virtual void update() = 0;
 
     glm::mat4 view_mat;
-    float scale_factor = 1.0f;
+    float scale_factor;
 
 };
 
 class IsometricCamera : public Camera {
     public:
 
-        IsometricCamera() {
-            this->scale_factor = 0.6484375f;
-            this->update();
-        }
+        IsometricCamera() : Camera(5.1875f) {
+            this->update(); }
 
         void update() override;
 

@@ -1,10 +1,12 @@
 //
-// Created by secondwtq <lovejay-lovemusic@outlook.com> 2015/08/23.
+// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
+//
+// Date: 2015-08-23
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
-// This file is part of ISDCNext.
+// This file is part of the HOWARD11 Game Engine.
 //
-// We have always treaded the borderland.
+// WE ARE STANDING ON THE EDGE.
 //
 
 #ifndef HOWARD11_HAMMERPRIMITIVEBODY_HXX
@@ -14,6 +16,7 @@
 #include "HammerPreDef.hxx"
 #include "HammerTransform.hxx"
 #include "Hammer.hxx"
+#include "HammerActorNode.hxx"
 
 #include <vector>
 #include <memory>
@@ -120,7 +123,9 @@ private:
 
 class PrimitiveHelper {
 public:
-    static void attachPrimitivesToActor(const PrimitiveBody& body, HammerActorNode *node);
+    static void attachPrimitivesToActor(const PrimitiveBody& body, HammerActorNodeBase *node);
+    static void attachHeightfieldToActor(HammerHeightfield& heightfield,
+            HammerActorNodeBase *node, const HAnyCoord& scale);
 };
 
 }

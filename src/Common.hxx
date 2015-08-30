@@ -46,7 +46,9 @@ enum HowardRTTIType {
 using HCoord = glm::i32vec3;
 using HPoint = glm::i16vec2;
 using HPixel = glm::u16vec2;
+using HColor = glm::vec4;
 using HAnyCoord = glm::vec3;
+using HScale = glm::vec2;
 using HQuaternion = glm::quat;
 
 #endif // HOWARD11_COMMON_HXX

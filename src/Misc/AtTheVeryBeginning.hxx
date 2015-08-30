@@ -59,8 +59,10 @@ struct Setting<WindowSetting> {
         ASSERT(cfg);
 
         cfg_t *section = cfg_getsec(cfg, section_name);
-        instance()->width = instance()->actual_width = cfg_getint(section, AC("width"));
-        instance()->height = instance()->actual_height = cfg_getint(section, AC("height"));
+        instance()->width = cfg_getint(section, AC("width"));
+        instance()->height = cfg_getint(section, AC("height"));
+        instance()->actual_width = instance()->width * 2;
+        instance()->actual_height = instance()->height * 2;
         instance()->title = cfg_getstr(section, "title");
     }
 

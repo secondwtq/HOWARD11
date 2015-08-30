@@ -14,8 +14,6 @@
 
 #include "StannumCommon.hxx"
 
-#include <iostream>
-
 #include "Verdandi/GLShaderExt.hxx"
 
 namespace Howard {

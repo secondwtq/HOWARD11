@@ -1,10 +1,12 @@
 //
-// Created by secondwtq <lovejay-lovemusic@outlook.com> 2015/08/23.
+// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
+//
+// Date: 2015-08-23
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
-// This file is part of ISDCNext.
+// This file is part of the HOWARD11 Game Engine.
 //
-// We have always treaded the borderland.
+// WE ARE STANDING ON THE EDGE.
 //
 
 #include "HammerActorNode.hxx"
@@ -21,21 +23,33 @@
 namespace Howard {
 namespace Hammer {
 
+constexpr const char HammerActorNodeStatic::m_node_type[];
+constexpr const char HammerActorNode::m_node_type[];
+
 HammerActorNode::HammerActorNode(RootNode *scene, const Transform& transform)
-        : HNode(scene), m_actor(Foundation.hammerFoundation().physics().
+        : HammerActorNodeBase(scene, transform), m_actor(Foundation.hammerFoundation().physics().
         createRigidDynamic(Glue::pxTransform(transform))), m_transform(transform) {
     m_actor->userData = this;
 }
 
 HammerActorNode::HammerActorNode(RootNode *scene,
         const Transform& transform, ConstructInternal internal) :
-        HNode(scene), m_actor(nullptr), m_transform(transform) { }
+        HammerActorNodeBase(scene, transform), m_actor(nullptr), m_transform(transform) { }
 
-void HammerActorNode::addToScene(HammerScene *scene) {
-        scene->scene()->addActor(*m_actor); }
+HammerActorNodeStatic::HammerActorNodeStatic(RootNode *scene, const Transform& transform)
+        : HammerActorNodeBase(scene, transform), m_transform(transform),
+        m_actor(Foundation.hammerFoundation().physics().
+                createRigidStatic(Glue::pxTransform(transform))) {
+
+}
+
+void HammerActorNodeBase::addToScene(HammerScene *scene) {
+    scene->scene()->addActor(*actor());
+}
 
 Transform HammerActorNode::transform() const {
-    return m_transform; }
+    return m_transform;
+}
 
 void HammerActorNode::addForce(const HAnyCoord& coord) {
     m_actor->addForce(Glue::pxCoord(coord));
@@ -54,16 +68,20 @@ void HammerActorNode::setVelocity(const HAnyCoord& velocity) {
 }
 
 float HammerActorNode::mass() const {
-    return m_actor->getMass(); }
+    return m_actor->getMass();
+}
 
 float HammerActorNode::invMass() const {
-    return m_actor->getInvMass(); }
+    return m_actor->getInvMass();
+}
 
 bool HammerActorNode::kinematic() const {
-    return m_actor->getRigidBodyFlags() & physx::PxRigidBodyFlag::eKINEMATIC; }
+    return m_actor->getRigidBodyFlags() & physx::PxRigidBodyFlag::eKINEMATIC;
+}
 
 bool HammerActorNode::dynamic() const {
-    return !kinematic(); }
+    return !kinematic();
+}
 
 void HammerActorNode::setKinematic() {
     if (!kinematic()) {
@@ -85,6 +103,18 @@ void HammerActorNode::setKinematicTarget(const Transform& transform) {
 
 void HammerActorNode::setTransform(const Transform& transform) {
     m_actor->setGlobalPose(Glue::pxTransform(transform));
+}
+
+physx::PxRigidActor *HammerActorNodeStatic::actor() {
+    return m_actor;
+}
+
+physx::PxRigidActor *HammerActorNode::actor() {
+    return m_actor;
+}
+
+void HammerActorNodeBase::setTransform(const Transform& transform) {
+    actor()->setGlobalPose(Glue::pxTransform(transform));
 }
 
 }
