@@ -18,6 +18,7 @@
 
 #include "Verdandi/GLCommon.hxx"
 #include "Verdandi/GLFoundation.hxx"
+#include "Verdandi/GLVertexArray.hxx"
 #include "StannumShaderCache.hxx"
 #include "StannumTexture.hxx"
 
@@ -203,14 +204,20 @@ public:
 
     inline ShaderCache *shaders() { return &this->m_shader_cache; }
 
+    inline SHARED(Verdandi::VertexArray) vao() {
+        return m_vao; }
+
 private:
 
     friend class CommandSprite;
     friend class DispatchCommandSprite;
+
+    void initializeVAO();
+
     std::vector<DataSprite *> m_sprites;
     SharedVertexBuffer m_shared_vb;
     ShaderCache m_shader_cache;
-
+    SHARED(Verdandi::VertexArray) m_vao;
 };
 
 }

@@ -19,6 +19,7 @@
 #include "Stannum/Stannum.hxx"
 #include "Stannum/StannumTexture.hxx"
 #include "Misc/Transform.hxx"
+#include "Verdandi/GLVertexArray.hxx"
 
 #include <vector>
 #include <memory>
@@ -67,12 +68,12 @@ public:
     DuneTerrain(const HPixel& num_chunks,
             Stannum::StannumRenderer *renderer);
 
-    inline std::shared_ptr<Verdandi::VertexBufferSingle<VertFormatDuneTerrain>> vertexBuffer() {
-        return m_vert_buffer; }
+    inline SHARED(Verdandi::VertexBufferSingle<VertFormatDuneTerrain>)
+        vertexBuffer() { return m_vert_buffer; }
 
-    void setHeightmap(std::shared_ptr<Verdandi::TextureImage> heightmap);
+    void setHeightmap(SHARED(Verdandi::TextureImage) heightmap);
 
-    inline std::shared_ptr<Verdandi::TextureImage> heightmap() {
+    inline SHARED(Verdandi::TextureImage) heightmap() {
         return m_heightmap; }
 
     void cacheChunk(std::shared_ptr<DuneChunk> chunk);
@@ -82,21 +83,26 @@ public:
 
     HAnyCoord heightfieldScale() const;
 
-    inline std::shared_ptr<DuneChunk> chunkAt(size_t x, size_t y) {
+    inline SHARED(DuneChunk) chunkAt(size_t x, size_t y) {
         ASSERT(x < m_total_size.x && y < m_total_size.y);
         return m_chunks[x][y];
     }
 
     HPixel m_num_chunks;
-    std::vector<std::vector<std::shared_ptr<DuneChunk>>> m_chunks;
+    std::vector<std::vector<SHARED(DuneChunk)>> m_chunks;
     HPixel m_total_size;
-    std::shared_ptr<Verdandi::TextureImage> m_heightmap;
-    std::shared_ptr<Verdandi::VertexBufferSingle<VertFormatDuneTerrain>> m_vert_buffer;
-    std::vector<std::shared_ptr<DuneTextureCache>> m_caches;
+    SHARED(Verdandi::TextureImage) m_heightmap;
+    SHARED(Verdandi::VertexBufferSingle<VertFormatDuneTerrain>) m_vert_buffer;
+    std::vector<SHARED(DuneTextureCache)> m_caches;
+    Verdandi::VertexArray m_vao;
 
-    std::shared_ptr<Verdandi::Image> m_scaled_height;
+    SHARED(Verdandi::Image) m_scaled_height;
 
     Stannum::StannumRenderer *m_renderer;
+
+private:
+
+    void initializeVAO();
 };
 
 class DuneTextureCache : public std::enable_shared_from_this<DuneTextureCache> {
@@ -228,7 +234,7 @@ public:
     const std::shared_ptr<Verdandi::TextureImage> mask() const {
         return m_mask; }
 
-    HAnyCoord uvscale { 2 };
+    HAnyCoord uvscale { 2, 1, 2 };
     std::shared_ptr<DuneTextureSet> m_textures;
     std::shared_ptr<Verdandi::TextureImage> m_mask;
 };

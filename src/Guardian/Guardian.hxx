@@ -14,6 +14,7 @@
 
 #include "GuardianCommon.hxx"
 
+#include "Verdandi/GLVertexArray.hxx"
 #include "Verdandi/GLVertexBuffer.hxx"
 #include "Stannum/StannumTexture.hxx"
 
@@ -27,6 +28,26 @@ class StannumRenderer;
 }
 
 namespace Guardian {
+
+class GuardianFoundation {
+public:
+    GuardianFoundation();
+
+    SHARED(Verdandi::VertexArray) vao() {
+        return m_vao; }
+
+    SHARED(Verdandi::VertexBufferSingle<VertFormatGuardianGeneral>) vertexBuffer() {
+        return m_vert_buffer; }
+
+private:
+
+    void initializeVAO();
+
+    // we share the same VAO and VBO.
+    //  we shared the same Vertex Format.
+    SHARED(Verdandi::VertexArray) m_vao;
+    SHARED(Verdandi::VertexBufferSingle<VertFormatGuardianGeneral>) m_vert_buffer;
+};
 
 class GuardianCanvas {
 public:
@@ -42,8 +63,6 @@ public:
     VGLIDX m_fbo = 0;
     glm::mat4 m_mvp;
     std::shared_ptr<Verdandi::TextureImage> m_target;
-    std::shared_ptr<Verdandi::VertexBufferSingle<VertFormatGuardianGeneral>> m_vert_buffer;
-
     Stannum::StannumRenderer *m_renderer;
 
 private:
@@ -67,8 +86,7 @@ public:
 }
 
 namespace Dune {
-    class DuneLayer;
-}
+    class DuneLayer; }
 
 namespace Guardian {
 

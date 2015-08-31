@@ -15,6 +15,7 @@
 #include "DuneShader.hxx"
 
 #include "Verdandi/GLVertexBuffer.hxx"
+#include "Verdandi/GLVertexArray.hxx"
 #include "Misc/AtTheVeryBeginning.hxx"
 #include "FSM/FSM.hxx"
 #include "FSM/FSMHelper.hxx"
@@ -69,7 +70,19 @@ DuneTerrain::DuneTerrain(const HPixel& num_chunks, Stannum::StannumRenderer *ren
     }
 
     m_caches.emplace_back(std::make_shared<DuneTextureCache>(renderer));
+    initializeVAO();
 
+}
+
+void DuneTerrain::initializeVAO() {
+    using namespace Verdandi;
+
+    VertexArrayScope scope(m_vao);
+    VertexBufferScope<VertexBufferSingle<VertFormatDuneTerrain>>
+            buf(vertexBuffer());
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE,
+            sizeof(VertFormatDuneTerrain), nullptr);
 }
 
 DuneChunk::DuneChunk(DuneTerrain *parent, const HPixel& position) :
@@ -93,10 +106,7 @@ void DispatchCommandDuneTerrain::execute(Stannum::StannumRenderer *renderer) {
     auto *shader = renderer->shaders()->get_shader
             <DuneTerrainShader>(ShaderType::DuneTerrain);
     shader->use();
-    VertexBufferScope<VertexBufferSingle<VertFormatDuneTerrain>>
-                buf(m_terrain->vertexBuffer());
-    VertexAttributeSimpleScope attr0(0);
-    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, sizeof(VertFormatDuneTerrain), nullptr);
+    VertexArrayScope vao(m_terrain->m_vao);
 
     {
         glm::mat4 view = m_camera->view_mat;
@@ -114,6 +124,9 @@ void DispatchCommandDuneTerrain::execute(Stannum::StannumRenderer *renderer) {
             Constants::cellsPerChunkX * Constants::cellSize,
             Constants::cellsPerChunkY * Constants::cellSize));
 
+    // TODO: culling, without which the cache
+    //  just does not work
+    // TODO: instancing
     for (auto chunks : m_terrain->m_chunks) {
         for (auto chunk : chunks) {
             ASSERT(chunk->cached());

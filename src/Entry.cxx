@@ -48,6 +48,7 @@
 #include "Hammer/HammerHeightfield.hxx"
 
 #include "Dune/Dune.hxx"
+#include "Guardian/Guardian.hxx"
 
 #include <string>
 #include <memory>
@@ -530,6 +531,9 @@ int main() {
     Howard::Verdandi::gl_init();
     renderer.init();
 
+    Howard::Foundation.setGuardianFoundation(new
+            Howard::Guardian::GuardianFoundation());
+
     Howard::Verdandi::TextureImage *textureimage = new Howard::Verdandi::TextureImage("node");
     Howard::Verdandi::TextureImage *textureimage_dot = new Howard::Verdandi::TextureImage("dot");
     Howard::Verdandi::TextureImage *textureimage_TestUnit = new Howard::Verdandi::TextureImage("TestUnit");
@@ -556,15 +560,15 @@ int main() {
         t = Image::createFromFile("pretex", "assets/dune_pretex.png", IRGB);
         textureimage_dunepretex->loadFromImage(*t.get());
 
-        std::shared_ptr<TextureImage> rocky(new TextureImage(
-                "tile_rocky", TextureWrapMode::WRepeatMirrored));
-        t = Image::createFromFile("rocky", "assets/tiles/rocky.png", IRGB);
-        rocky->loadFromImage(*t.get());
+        std::shared_ptr<TextureImage> sandsoil(new TextureImage(
+                "tile_sandsoil", TextureWrapMode::WRepeat));
+        t = Image::createFromFile("sandsoil", "assets/tiles/sandsoil.png", IRGB);
+        sandsoil->loadFromImage(*t.get());
 
-        std::shared_ptr<TextureImage> sandpebble(new TextureImage(
-                "tile_sandpebble", TextureWrapMode::WRepeatMirrored));
-        t = Image::createFromFile("sandpebble", "assets/tiles/sandpebble.png", IRGB);
-        sandpebble->loadFromImage(*t.get());
+        std::shared_ptr<TextureImage> stonewall2(new TextureImage(
+                "tile_stonewall2", TextureWrapMode::WRepeat));
+        t = Image::createFromFile("stonewall2", "assets/tiles/stonewall2.png", IRGB);
+        stonewall2->loadFromImage(*t.get());
 
         std::shared_ptr<TextureImage> layer1_mask(new TextureImage("layer1"));
         t = Image::createFromFile("layer1", "assets/layer1.png", IGRAY);
@@ -582,11 +586,12 @@ int main() {
         terrain->m_caches[0]->initializeCanvas();
         auto tileset1 = std::make_shared<DuneTextureSet>();
         auto tileset2 = std::make_shared<DuneTextureSet>();
-        tileset1->m_textures[0] = sandpebble;
-        tileset2->m_textures[0] = rocky;
+        tileset1->m_textures[0] = sandsoil;
+        tileset2->m_textures[0] = stonewall2;
 
         auto layer1 = std::make_shared<DuneLayer>(tileset1, layer1_mask);
         auto layer2 = std::make_shared<DuneLayer>(tileset2, layer2_mask);
+        layer2->uvscale = { 4.0, 0.0, 0.0 };
 
         auto chunk0 = terrain->chunkAt(0, 0);
         chunk0->appendLayer(layer1);

@@ -51,4 +51,6 @@ using HAnyCoord = glm::vec3;
 using HScale = glm::vec2;
 using HQuaternion = glm::quat;
 
+#define SHARED(type) std::shared_ptr<type>
+
 #endif // HOWARD11_COMMON_HXX

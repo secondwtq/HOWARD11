@@ -13,6 +13,7 @@
 #include "StannumSprite.hxx"
 #include "StannumSpriteShader.hxx"
 
+#include "Verdandi/GLVertexArray.hxx"
 #include "Verdandi/GLVertexBufferExt.hxx"
 
 #include <glm/glm.hpp>
@@ -24,6 +25,8 @@
 
 namespace Howard {
 namespace Stannum {
+
+using namespace Verdandi;
 
 MappedVertexBuffer<VertFormatSprite> *CommandSprite::m_buf = nullptr;
 
@@ -48,6 +51,28 @@ void StannumRenderer::init() {
     this->m_shared_vb.init(2048 * sizeof(glm::vec3) * 3);
 
     CommandSprite::m_buf = this->m_shared_vb.map<VertFormatSprite>(128);
+
+    m_vao = std::make_shared<VertexArray>();
+    initializeVAO();
+}
+
+void StannumRenderer::initializeVAO() {
+    VertexArrayScope scope(m_vao);
+
+    CommandSprite::m_buf->bind();
+    glEnableVertexAttribArray(0);
+    glEnableVertexAttribArray(1);
+    glEnableVertexAttribArray(2);
+    glEnableVertexAttribArray(3);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertFormatSprite),
+            (void *) CommandSprite::m_buf->m_start);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertFormatSprite),
+            (void *) (CommandSprite::m_buf->m_start + sizeof(glm::vec3)));
+    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertFormatSprite),
+            (void *) (CommandSprite::m_buf->m_start + 2 * sizeof(glm::vec3)));
+    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(VertFormatSprite),
+            (void *) (CommandSprite::m_buf->m_start + 2 * sizeof(glm::vec3) +
+                      sizeof(glm::vec2)));
 }
 
 void StannumRenderer::destroy() {
@@ -62,33 +87,24 @@ void DispatchCommandSprite::execute(StannumRenderer *renderer) {
     using namespace AtTheVeryBeginning;
     glEnable(GL_BLEND);
     glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-    auto *shader = renderer->shaders()->get_shader<SpriteShader>
-            (ShaderType::CommonSprite);
-    shader->use();
-    CommandSprite::m_buf->bind();
-
-    glm::mat4 projection = glm::ortho(0.f, (float) Setting<WindowSetting>::instance()->actual_width,
-            (float) Setting<WindowSetting>::instance()->actual_height, 0.f, -16384.f, 16384.f);
-    SET_UNIFORMAT4(*shader, mvp, projection);
-
-    auto scope = Verdandi::VertexAttributeArrayScope<4>({ 0, 1, 2, 3 });
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(VertFormatSprite),
-            (void *) CommandSprite::m_buf->m_start);
-    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(VertFormatSprite),
-            (void *) (CommandSprite::m_buf->m_start + sizeof(glm::vec3)));
-    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(VertFormatSprite),
-            (void *) (CommandSprite::m_buf->m_start + 2 * sizeof(glm::vec3)));
-    glVertexAttribPointer(3, 4, GL_FLOAT, GL_FALSE, sizeof(VertFormatSprite),
-            (void *) (CommandSprite::m_buf->m_start + 2 * sizeof(glm::vec3) +
-                      sizeof(glm::vec2)));
 
     size_t idx = 0;
     for (auto data : renderer->m_sprites) {
         for (size_t i = 0; i < 6; i++) {
             idx = CommandSprite::m_buf->push(&data->data[i]); }
     }
-
+    CommandSprite::m_buf->bind();
     CommandSprite::m_buf->upload();
+
+    auto *shader = renderer->shaders()->get_shader<SpriteShader>
+            (ShaderType::CommonSprite);
+    shader->use();
+    VertexArrayScope scope(renderer->vao());
+
+    glm::mat4 projection = glm::ortho(0.f, (float) Setting<WindowSetting>::instance()->actual_width,
+            (float) Setting<WindowSetting>::instance()->actual_height, 0.f, -16384.f, 16384.f);
+    SET_UNIFORMAT4(*shader, mvp, projection);
+
     idx = 0;
     for (auto data : renderer->m_sprites) {
         BIND_TEXTUREP(shader, texture_major, data->texture->id(), 0);

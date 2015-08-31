@@ -31,6 +31,10 @@ namespace Hammer {
 class HammerFoundation;
 class HammerScene;
 }
+
+namespace Guardian {
+class GuardianFoundation;
+}
 }
 
 namespace Howard {
@@ -54,6 +58,9 @@ public:
     inline Hammer::HammerScene& mainPhysScene() {
         return *m_mainPhysScene; }
 
+    inline Guardian::GuardianFoundation& guardianFoundation() {
+        return *m_guardianFoundation; }
+
     FoundationInstance& setJSRuntime(xoundation::SpdRuntime *runtime) {
         m_JSRuntime = runtime; return *this; }
     FoundationInstance& setJSGlobal(JS::PersistentRooted<JSObject *> *global) {
@@ -69,6 +76,8 @@ public:
         m_hammerFoundation = foundation; return *this; }
     FoundationInstance& setMainPhysScene(Hammer::HammerScene *scene) {
         m_mainPhysScene = scene; return *this; }
+    FoundationInstance& setGuardianFoundation(Guardian::GuardianFoundation *foundation) {
+        m_guardianFoundation = foundation; return *this; }
 
 private:
 
@@ -80,6 +89,8 @@ private:
 
     Hammer::HammerFoundation *m_hammerFoundation = nullptr;
     Hammer::HammerScene *m_mainPhysScene = nullptr;
+
+    Guardian::GuardianFoundation *m_guardianFoundation = nullptr;
 };
 
 extern FoundationInstance Foundation;
