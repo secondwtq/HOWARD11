@@ -42,6 +42,14 @@ enum ImageSourceFormat {
     FPNG
 };
 
+enum TextureWrapMode {
+    WNone,
+    WClamp, // clamp to edge
+    WClampBorder,
+    WRepeat,
+    WRepeatMirrored
+};
+
 class ImageHelper {
 public:
     inline static size_t numberOfChannels(ImageChannelType channel) {
@@ -61,6 +69,8 @@ public:
 
     static unsigned int stbTypeForChannel(ImageChannelType channel);
     static VGLIDX glEnumForChannelFormat(ImageChannelType channel);
+
+    static VGLIDX glEnumForWrapMode(TextureWrapMode wrap);
 };
 
 class TextureImage;
@@ -131,7 +141,7 @@ private:
 class TextureImage : public Asset {
 public:
 
-    TextureImage(const std::string& name);
+    TextureImage(const std::string& name, TextureWrapMode wrap = WClamp);
     ~TextureImage();
 
     const char *asset_type() const override { return TextureImage::m_asset_type; }
@@ -158,10 +168,20 @@ public:
     inline bool ok() const {
         return m_channel_type != INONE; }
 
+    // not to be called internally
+    //  since it cause the 'OOP and hidden binding' problem
+    //  set the m_wrap, and use rewrap() instead
+    void setWrapMode(TextureWrapMode mode);
+
 private:
 
     void cleanupForReload();
+    // update wrap mode for GL texture
+    //  according to value of m_wrap
+    //  * require m_texid to be BINDED already!
+    void rewrap();
 
+    TextureWrapMode m_wrap;
     ImageChannelType m_channel_type = INONE;
     VGLIDX m_texid;
 };

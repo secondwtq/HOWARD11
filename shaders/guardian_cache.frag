@@ -27,22 +27,22 @@ void main() {
     if (uvscales[0][0] > 1e-6) {
         vec3 texcolor = texture(texture1, frag_texcoord * uvscales[0][0]).rgb;
         float alpha = texture(mask1, frag_texcoord).r;
-        final += texcolor * alpha;
+        final = mix(final, texcolor, alpha);
     }
     if (uvscales[0][1] > 1e-6) {
         vec3 texcolor = texture(texture2, frag_texcoord * uvscales[0][1]).rgb;
         float alpha = texture(mask2, frag_texcoord).r;
-        final += texcolor * alpha;
+        final = mix(final, texcolor, alpha);
     }
     if (uvscales[0][2] > 1e-6) {
         vec3 texcolor = texture(texture3, frag_texcoord * uvscales[0][2]).rgb;
         float alpha = texture(mask3, frag_texcoord).r;
-        final += texcolor * alpha;
+        final = mix(texcolor, final, alpha);
     }
     if (uvscales[0][3] > 1e-6) {
         vec3 texcolor = texture(texture4, frag_texcoord * uvscales[0][3]).rgb;
         float alpha = texture(mask4, frag_texcoord).r;
-        final += texcolor * alpha;
+        final = mix(texcolor, final, alpha);
     }
 
     color = vec4(final, 1.0);

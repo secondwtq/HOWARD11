@@ -127,7 +127,8 @@ void Image::resize(const HPixel& size) {
     this->size = size;
 }
 
-TextureImage::TextureImage(const std::string& name) : Asset(name.c_str()), size(0, 0) {
+TextureImage::TextureImage(const std::string& name, TextureWrapMode wrap)
+        : Asset(name.c_str()), size(0, 0), m_wrap(wrap) {
     VGLIDX texture_t;
     glGenTextures(1, &texture_t);
     this->m_texid = texture_t;
@@ -143,8 +144,7 @@ void TextureImage::loadFromImage(const Image& image) {
     glTexImage2D(GL_TEXTURE_2D, 0, ImageHelper::glEnumForChannelFormat(m_channel_type),
             size.x, size.y, 0, ImageHelper::glEnumForChannelFormat(m_channel_type),
             GL_UNSIGNED_BYTE, image.ptr());
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    rewrap();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -161,8 +161,7 @@ void TextureImage::loadEmpty(const HPixel& size, ImageChannelType channelfmt) {
     glTexImage2D(GL_TEXTURE_2D, 0, ImageHelper::glEnumForChannelFormat(m_channel_type),
             size.x, size.y, 0, ImageHelper::glEnumForChannelFormat(m_channel_type),
             GL_UNSIGNED_BYTE, nullptr);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+    rewrap();
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
     glBindTexture(GL_TEXTURE_2D, 0);
@@ -188,12 +187,34 @@ void TextureImage::loadFromTextureImage(const TextureImage& image) {
     glDeleteFramebuffers(1, &fbo);
 }
 
+// if no image is loaded to this texture
+//  then just set a state
+//  GL wrap mode will be set in load*() functions
+void TextureImage::setWrapMode(TextureWrapMode mode) {
+    m_wrap = mode;
+    if (ok()) {
+        glBindTexture(GL_TEXTURE_2D, m_texid);
+        rewrap();
+        glBindTexture(GL_TEXTURE_2D, 0);
+    }
+}
+
+void TextureImage::rewrap() {
+    if (ok()) {
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S,
+                ImageHelper::glEnumForWrapMode(m_wrap));
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T,
+                ImageHelper::glEnumForWrapMode(m_wrap));
+    }
+}
+
 void TextureImage::cleanupForReload() {
     if (m_channel_type != INONE) {
         VGLIDX texture_t = m_texid;
         glDeleteTextures(1, &texture_t);
         glGenTextures(1, &texture_t);
         m_texid = texture_t;
+        m_channel_type = INONE;
     }
 }
 
@@ -226,6 +247,24 @@ unsigned int ImageHelper::stbTypeForChannel(ImageChannelType channel) {
             return STBI_grey;
         case IGRAYA:
             return STBI_grey_alpha;
+        default:
+            return 0;
+    }
+}
+
+VGLIDX ImageHelper::glEnumForWrapMode(TextureWrapMode mode) {
+    switch (mode) {
+        case WNone:
+            // default: clamp to edge
+            return glEnumForWrapMode(WClamp);
+        case WClamp:
+            return GL_CLAMP_TO_EDGE;
+        case WClampBorder:
+            return GL_CLAMP_TO_BORDER;
+        case WRepeat:
+            return GL_REPEAT;
+        case WRepeatMirrored:
+            return GL_MIRRORED_REPEAT;
         default:
             return 0;
     }

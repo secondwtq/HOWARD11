@@ -556,11 +556,13 @@ int main() {
         t = Image::createFromFile("pretex", "assets/dune_pretex.png", IRGB);
         textureimage_dunepretex->loadFromImage(*t.get());
 
-        std::shared_ptr<TextureImage> rocky(new TextureImage("tile_rocky"));
+        std::shared_ptr<TextureImage> rocky(new TextureImage(
+                "tile_rocky", TextureWrapMode::WRepeatMirrored));
         t = Image::createFromFile("rocky", "assets/tiles/rocky.png", IRGB);
         rocky->loadFromImage(*t.get());
 
-        std::shared_ptr<TextureImage> sandpebble(new TextureImage("tile_sandpebble"));
+        std::shared_ptr<TextureImage> sandpebble(new TextureImage(
+                "tile_sandpebble", TextureWrapMode::WRepeatMirrored));
         t = Image::createFromFile("sandpebble", "assets/tiles/sandpebble.png", IRGB);
         sandpebble->loadFromImage(*t.get());
 
@@ -580,8 +582,8 @@ int main() {
         terrain->m_caches[0]->initializeCanvas();
         auto tileset1 = std::make_shared<DuneTextureSet>();
         auto tileset2 = std::make_shared<DuneTextureSet>();
-        tileset1->m_textures[0] = rocky;
-        tileset2->m_textures[0] = sandpebble;
+        tileset1->m_textures[0] = sandpebble;
+        tileset2->m_textures[0] = rocky;
 
         auto layer1 = std::make_shared<DuneLayer>(tileset1, layer1_mask);
         auto layer2 = std::make_shared<DuneLayer>(tileset2, layer2_mask);
