@@ -32,6 +32,53 @@ using namespace FSMHelper;
 
 namespace Dune {
 
+class DuneTextureCache : public std::enable_shared_from_this<DuneTextureCache> {
+public:
+
+    DuneTextureCache(Stannum::StannumRenderer *renderer);
+
+    void initializeCanvas();
+
+    inline size_t size() const {
+        return m_cache_cache.size(); }
+    inline bool full() const {
+        return size() >= 64; }
+    inline bool empty() const {
+        return size() == 0; }
+
+    bool hasCacheFor(std::shared_ptr<DuneChunk> chunk) const;
+    bool entryHold(const glm::u8vec2& idx) const;
+    const std::weak_ptr<DuneTextureCacheData> cacheDataFor(std::shared_ptr<DuneChunk> chunk) const;
+    inline std::shared_ptr<Verdandi::TextureImage> *textures() {
+        return &m_textures[0]; }
+
+    std::shared_ptr<DuneTextureCacheData> pickAndKickAnEntry();
+    // calling this when cache is full leads to an assertion failed
+    glm::u8vec2 pickAnEntryWhenNotFull() const;
+
+    std::weak_ptr<DuneTextureCacheData> insertCacheEntry(
+            std::shared_ptr<DuneChunk> chunk, const glm::u8vec2& idx);
+
+    void markCacheEntryUsed(const std::weak_ptr<DuneTextureCacheData>& data);
+
+    inline Guardian::GuardianCanvas *canvas() {
+        return m_canvas; }
+
+private:
+
+    std::list<std::weak_ptr<DuneTextureCacheData>> m_lru;
+    std::unordered_map<std::shared_ptr<DuneTextureCacheData>,
+            std::list<std::weak_ptr<DuneTextureCacheData>>::iterator> m_lru_map;
+
+    std::weak_ptr<DuneTextureCacheData> m_caches[8][8];
+    std::unordered_map<DuneChunk *, std::weak_ptr<DuneTextureCacheData>> m_cache_cache;
+
+    std::shared_ptr<Verdandi::TextureImage> m_textures[DuneTextureType::DEnd];
+
+    Stannum::StannumRenderer *m_renderer;
+    Guardian::GuardianCanvas *m_canvas;
+};
+
 std::vector<VertFormatDuneTerrain> Helper::generateChunkVertex(
         HPixel count_faces, float cell_size) {
     std::vector<VertFormatDuneTerrain> ret;
@@ -89,18 +136,21 @@ void DuneTerrain::initializeVAO() {
 DuneChunk::DuneChunk(DuneTerrain *parent, const HPixel& position) :
         m_parent(parent), m_position(position) { }
 
+void DuneChunk::cacheMarkUsed() {
+    ASSERT(cached());
+    cacheData()->cache.lock()->markCacheEntryUsed(cacheData());
+}
+
 void DispatchCommandDuneTerrain::execute(Stannum::StannumRenderer *renderer) {
     using namespace Stannum;
     using namespace Verdandi;
     using namespace AtTheVeryBeginning;
 
     glm::mat4 view_projection;
-//    glm::mat4 view_projection_;
     {
-        glm::mat4 view = m_camera->view_mat;
         glm::mat4 projection = glm::ortho(0.f, (float) Setting<WindowSetting>::instance()->actual_width,
                 (float) Setting<WindowSetting>::instance()->actual_height, 0.f, -16384.f, 16384.f);
-        view_projection = scale(projection, glm::vec3 { 1, 1, 1 } * m_camera->scale_factor) * view;
+        view_projection = scale(projection, glm::vec3 { 1, 1, 1 } * m_camera->scale_factor) * m_camera->view_mat;
     }
 
     std::vector<DuneChunk *> chunks_to_render;
@@ -108,16 +158,27 @@ void DispatchCommandDuneTerrain::execute(Stannum::StannumRenderer *renderer) {
     for (auto chunks : m_terrain->m_chunks) {
         for (auto chunk : chunks) {
             // TODO: more accurate AABB, maybe with physics?
-            HAnyCoord center { (glm::vec2) chunk->position() + (glm::vec2) m_terrain->sizePerChunk2D() / 2.0f, 192 / 2.0f };
+            HAnyCoord center { (glm::vec2) chunk->position() +
+                    (glm::vec2) m_terrain->sizePerChunk2D() / 2.0f, 192 / 2.0f };
             HAnyCoord half_extends { (glm::vec2) m_terrain->sizePerChunk2D() / 2.0f, 192 / 2.0f };
             if (frustum.checkAABB(center, half_extends)) {
                 chunks_to_render.push_back(chunk.get()); }
         }
     }
 
+    size_t numChunkToRender = chunks_to_render.size(),
+        numChunkCached = 0, numChunkToCache = 0;
+    for (auto chunk : chunks_to_render) {
+        if (chunk->cached()) {
+            numChunkCached++;
+            chunk->cacheMarkUsed();
+        }
+    }
     for (auto chunk : chunks_to_render) {
         if (!chunk->cached()) {
-            chunk->cache(); }
+            numChunkToCache++;
+            chunk->cache();
+        }
     }
 
     auto *shader = renderer->shaders()->get_shader
@@ -135,13 +196,16 @@ void DispatchCommandDuneTerrain::execute(Stannum::StannumRenderer *renderer) {
     //  just does not work
     // TODO: instancing
     for (auto chunk : chunks_to_render) {
+        // anyone has something like "multicache"?
+        //  this assert surprisingly works for FIFO solution
         ASSERT(chunk->cached());
 
         SET_UNIFORM2P(shader, chunk_position, chunk->position());
         SET_UNIFORM2P(shader, cache_position, chunk->cacheData()->texcoord());
         BIND_TEXTUREP(shader, texcache_diffuse,
                     chunk->cacheData()->cache.lock()->textures()[DuneTextureType::DColor]->id(), 1);
-        glDrawArrays(GL_TRIANGLES, 0, m_terrain->vertexBuffer()->countElements());
+        glDrawArrays(GL_TRIANGLES, 0, static_cast<GLsizei>(
+                m_terrain->vertexBuffer()->countElements()));
     }
 }
 
@@ -205,7 +269,9 @@ std::weak_ptr<DuneTextureCacheData> DuneTextureCache::insertCacheEntry(
     data->chunk = chunk;
     data->cache = shared_from_this();
 
-    m_queue.push_front(data);
+    auto i = m_lru.insert(m_lru.end(), data);
+    m_lru_map.insert(std::make_pair(data, i));
+
     m_caches[idx.x][idx.y] = data;
     m_cache_cache.insert({ chunk.get(), data });
     data->updateChunkWithSelf(data);
@@ -233,13 +299,10 @@ std::shared_ptr<DuneTextureCacheData> DuneTextureCache::pickAndKickAnEntry() {
     if (empty()) {
         ret->setIndex(pickAnEntryWhenNotFull());
     } else {
-        ASSERT(!m_queue.empty());
-        std::weak_ptr<DuneTextureCacheData> datap = m_queue.back();
-        {
-            std::shared_ptr<DuneTextureCacheData> data = datap.lock();
-            // you use memcpy()? fork you
-            ret = std::make_shared<DuneTextureCacheData>(*data);
-        }
+        ASSERT(!m_lru.empty());
+        std::shared_ptr<DuneTextureCacheData> data = m_lru.front().lock();
+        // you use memcpy()? fork you
+        ret = std::make_shared<DuneTextureCacheData>(*data);
         {
             ASSERT(!ret->chunk.expired());
             DuneChunk *chunk = ret->chunk.lock().get();
@@ -254,9 +317,22 @@ std::shared_ptr<DuneTextureCacheData> DuneTextureCache::pickAndKickAnEntry() {
         //  the weak_ptr in DuneChunk would hopefully expire.
         log("Dune", L::Message) << "DuneTextureCache::pickAndKickAnEntry - kicking ("
             << ret->index().x << ", " << ret->index().y << ")" << rn;
-        m_queue.pop_back();
+
+        const auto i = m_lru_map.find(data);
+        ASSERT(i != m_lru_map.end());
+        m_lru.pop_front();
+        m_lru_map.erase(i);
     }
     return ret;
+}
+
+void DuneTextureCache::markCacheEntryUsed(
+        const std::weak_ptr<DuneTextureCacheData>& ptr) {
+    ASSERT(!ptr.expired());
+    const auto i = m_lru_map.find(ptr.lock());
+    ASSERT(i != m_lru_map.end());
+
+    m_lru.splice(m_lru.end(), m_lru, i->second);
 }
 
 glm::u8vec2 DuneTextureCache::pickAnEntryWhenNotFull() const {

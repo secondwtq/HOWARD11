@@ -23,8 +23,9 @@
 
 #include <vector>
 #include <memory>
+#include <map>
 #include <unordered_map>
-#include <deque>
+#include <list>
 
 namespace Howard {
 
@@ -58,6 +59,12 @@ class DuneLayer;
 class DuneChunk;
 class DuneTextureCache;
 struct DuneTextureCacheData;
+
+}
+}
+
+namespace Howard {
+namespace Dune {
 
 // A terrain object has 16 x 16 chunks in maximum
 //  that is, 256 x 256 cells, 1024 x 1024 polys (1048576)
@@ -111,48 +118,6 @@ private:
     void initializeVAO();
 };
 
-class DuneTextureCache : public std::enable_shared_from_this<DuneTextureCache> {
-public:
-
-    DuneTextureCache(Stannum::StannumRenderer *renderer);
-
-    void initializeCanvas();
-
-    inline size_t size() const {
-        return m_cache_cache.size(); }
-    inline bool full() const {
-        return size() >= 64; }
-    inline bool empty() const {
-        return size() == 0; }
-
-    bool hasCacheFor(std::shared_ptr<DuneChunk> chunk) const;
-    bool entryHold(const glm::u8vec2& idx) const;
-    const std::weak_ptr<DuneTextureCacheData> cacheDataFor(std::shared_ptr<DuneChunk> chunk) const;
-    inline std::shared_ptr<Verdandi::TextureImage> *textures() {
-        return &m_textures[0]; }
-
-    std::shared_ptr<DuneTextureCacheData> pickAndKickAnEntry();
-    // calling this when cache is full leads to an assertion failed
-    glm::u8vec2 pickAnEntryWhenNotFull() const;
-
-    std::weak_ptr<DuneTextureCacheData> insertCacheEntry(
-            std::shared_ptr<DuneChunk> chunk, const glm::u8vec2& idx);
-
-    inline Guardian::GuardianCanvas *canvas() {
-        return m_canvas; }
-
-private:
-
-    std::deque<std::shared_ptr<DuneTextureCacheData>> m_queue;
-    std::weak_ptr<DuneTextureCacheData> m_caches[8][8];
-    std::unordered_map<DuneChunk *, std::weak_ptr<DuneTextureCacheData>> m_cache_cache;
-
-    std::shared_ptr<Verdandi::TextureImage> m_textures[DuneTextureType::DEnd];
-
-    Stannum::StannumRenderer *m_renderer;
-    Guardian::GuardianCanvas *m_canvas;
-};
-
 // According to our documents
 // A chunk has 16 x 16 cells (256 in total),
 //  64 x 64 polys (4096 in total, and 8192 tris)
@@ -164,8 +129,13 @@ public:
     inline bool cached() const {
         return !m_cache_data.expired(); }
     inline void cache() {
+        ASSERT(!cached());
+        m_parent->cacheChunk(shared_from_this());
+    }
+
+    inline void ensureCached() {
         if (!cached()) {
-            m_parent->cacheChunk(shared_from_this()); }
+            cache(); }
     }
 
     // world position (in meters) of left-top corner
@@ -175,6 +145,13 @@ public:
     inline std::shared_ptr<DuneTextureCacheData> cacheData() {
         ASSERT(cached());
         return m_cache_data.lock();
+    }
+
+    void cacheMarkUsed();
+
+    inline void cacheMarkUsedIfCached() {
+        if (cached()) {
+            cacheMarkUsed(); }
     }
 
     const std::vector<std::shared_ptr<DuneLayer>>& layers() const {
