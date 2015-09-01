@@ -14,12 +14,13 @@
 
 #include "../Dwight/Node.hxx"
 #include "../Dwight/Event.hxx"
-#include "Hammer.hxx"
-#include "HammerPreDef.hxx"
+#include "HammerPreDefExternal.hxx"
 #include "HammerTransform.hxx"
 
 namespace Howard {
 namespace Hammer {
+
+class HammerScene;
 
 // may be just for CCT.
 enum ConstructInternal {

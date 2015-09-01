@@ -14,10 +14,12 @@
 
 #include <glm/glm.hpp>
 
-#include "HammerPreDef.hxx"
+#include "HammerPreDefExternal.hxx"
 
 namespace Howard {
 namespace Hammer {
+
+class Material;
 
 class HammerFoundation {
 public:

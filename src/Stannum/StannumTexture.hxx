@@ -15,6 +15,7 @@
 #include <stdint.h>
 #include <vector>
 #include <string>
+#include <memory>
 
 #include "Common.hxx"
 #include "Debug.hxx"
@@ -228,7 +229,6 @@ private:
 };
 
 }
-
 }
 
 #endif // HOWARD11_STANNUMTEXTURE_HXX

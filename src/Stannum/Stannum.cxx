@@ -16,11 +16,11 @@
 #include "Verdandi/GLVertexArray.hxx"
 #include "Verdandi/GLVertexBufferExt.hxx"
 
+#include "thirdpt/howardgl.hxx"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
 #include "Debug.hxx"
-
 #include "Misc/AtTheVeryBeginning.hxx"
 
 namespace Howard {
@@ -114,6 +114,45 @@ void DispatchCommandSprite::execute(StannumRenderer *renderer) {
 
     CommandSprite::m_buf->clear();
     renderer->m_sprites.clear();
+}
+
+void SharedVertexBuffer::init(size_t size) {
+    VGLIDX buf_t = 0;
+    glGenBuffers(1, &(buf_t));
+    this->m_buf_id = buf_t;
+    glBindBuffer(GL_ARRAY_BUFFER, this->m_buf_id);
+    char *data_t = (char *) malloc(size * 2);
+    glBufferData(GL_ARRAY_BUFFER, size * 2, data_t, GL_DYNAMIC_DRAW);
+    free(data_t);
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+
+    this->m_size = size;
+    this->mapped_end = 0;
+}
+
+void SharedVertexBuffer::bind() {
+    glBindBuffer(GL_ARRAY_BUFFER, this->m_buf_id);
+}
+
+void SharedVertexBuffer::upload() {
+    glBindBuffer(GL_ARRAY_BUFFER, this->m_buf_id);
+    for (auto map : m_mappings) {
+        glBufferSubData(GL_ARRAY_BUFFER, map->start_point(), map->length_in_bytes(),
+                map->data_ptr());
+    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+}
+
+void StannumRenderer::render_dispatch(std::shared_ptr<RenderQueue> queue) {
+    ASSERT(queue != nullptr);
+
+    Verdandi::clear_depth();
+    glClear(GL_COLOR_BUFFER_BIT);
+    for (auto cmd : queue->commands) {
+        cmd->execute(this); }
+    for (auto cmd : queue->dispatch_commands) {
+        cmd->execute(this); }
+    queue->clear();
 }
 
 }

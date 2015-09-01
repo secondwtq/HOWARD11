@@ -12,13 +12,12 @@
 #include "GLFoundation.hxx"
 
 #include "GLCommon.hxx"
+#include "thirdpt/howardgl.hxx"
 
 #include "Misc/AtTheVeryBeginning.hxx"
 
 namespace Howard {
 namespace Verdandi {
-
-VGLVertexArray vertex_arrays[5];
 
 void resetRenderTarget() {
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
@@ -29,17 +28,12 @@ void resetRenderTarget() {
 //                       ->actual_height);
 }
 
-void init_target() { return resetRenderTarget(); }
+void init_target() {
+    return resetRenderTarget(); }
 
 void gl_init() {
-
-    glGenVertexArrays(5, &vertex_arrays[0]);
-    glBindVertexArray(vertex_arrays[0]);
-
     glClearDepth(1.f);
-
     init_target();
-
 }
 
 void clear_depth() {

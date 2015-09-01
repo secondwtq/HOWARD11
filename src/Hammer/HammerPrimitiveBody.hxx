@@ -13,17 +13,18 @@
 #define HOWARD11_HAMMERPRIMITIVEBODY_HXX
 
 #include "../Common.hxx"
-#include "HammerPreDef.hxx"
+#include "HammerPreDefExternal.hxx"
 #include "HammerTransform.hxx"
-#include "Hammer.hxx"
-#include "HammerActorNode.hxx"
 
 #include <vector>
 #include <memory>
-#include <Dwight/Foundation.hxx>
 
 namespace Howard {
 namespace Hammer {
+
+class HammerFoundation;
+class HammerActorNodeBase;
+class HammerHeightfield;
 
 enum PrimitiveType {
     PNone,

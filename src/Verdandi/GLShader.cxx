@@ -8,12 +8,14 @@
 
 #include "GLCommon.hxx"
 #include "GLShader.hxx"
+#include "GLShaderExt.hxx"
 
-#include <cstdlib>
+#include "thirdpt/howardgl.hxx"
+
+#include <stdlib.h>
 #include <string>
 
 namespace Howard {
-
 namespace Verdandi {
 
 const std::size_t LENGTH_SHADER_READBUFFER = 8192;
@@ -24,7 +26,7 @@ char _shader_readbuffer[LENGTH_SHADER_READBUFFER] { 0 };
 
 // from http://blog.csdn.net/racehorse/article/details/6616256
 std::string gl_shader::log(SHADERTYPE type) {
-	GLuint obj = (type == SHADERTYPE::FRAG) ? this->frag_id : this->vert_id;
+	VGLIDX obj = (type == SHADERTYPE::FRAG) ? this->frag_id : this->vert_id;
 	int length = 0, chwritten = 0;
 	char *log_buffer;
 	std::string ret = "";
@@ -50,7 +52,7 @@ void gl_shader::load_file(SHADERTYPE type, const std::string& path) {
 }
 
 void gl_shader::load_str(SHADERTYPE type, const char *src) {
-	GLuint *target = (type == SHADERTYPE::FRAG) ? &this->frag_id : &this->vert_id;
+	VGLIDX *target = (type == SHADERTYPE::FRAG) ? &this->frag_id : &this->vert_id;
 	auto shader_tp = (type == SHADERTYPE::FRAG) ? GL_FRAGMENT_SHADER : GL_VERTEX_SHADER;
 
 	*target = glCreateShader(shader_tp);
@@ -89,6 +91,12 @@ int gl_shader::attribute(const char *name) {
 int gl_shader::uniform(const char *name) {
 	return glGetUniformLocation(this->obj_id, name); }
 
+void gl_shader_ext::postInitialize() {
+    glUseProgram(id());
+//    glDrawArrays(GL_TRIANGLES, 0, 6);
+//    glGetError();
+    glUseProgram(0);
 }
 
+}
 }

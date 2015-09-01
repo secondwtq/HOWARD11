@@ -12,12 +12,9 @@
 #ifndef HOWARD11_COMMON_HXX
 #define HOWARD11_COMMON_HXX
 
-#include <stddef.h>
-#include <stdint.h>
-
 namespace Howard {
 
-typedef uint8_t RawDataT;
+typedef unsigned char RawDataT;
 
 enum HowardRTTIType {
     TBase = 0,

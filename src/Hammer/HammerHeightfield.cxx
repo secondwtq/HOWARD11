@@ -10,10 +10,13 @@
 //
 
 #include "HammerHeightfield.hxx"
+
+#include "Hammer.hxx"
 #include "HammerActorNode.hxx"
 #include "HammerPrimitiveBody.hxx"
 
 #include "Dwight/Foundation.hxx"
+#include "Stannum/StannumTexture.hxx"
 
 #include "../thirdpt/physx.hxx"
 

@@ -18,20 +18,26 @@
 
 #include "Verdandi/GLCommon.hxx"
 #include "Verdandi/GLFoundation.hxx"
-#include "Verdandi/GLVertexArray.hxx"
 #include "StannumShaderCache.hxx"
-#include "StannumTexture.hxx"
 
 #include <stdlib.h>
 #include <memory>
 
 namespace Howard {
+namespace Verdandi {
+class VertexArray;
+}
 namespace Stannum {
 
 class MappedVertexBufferBase {
     public:
 
     virtual ~MappedVertexBufferBase() { }
+
+    virtual size_t start_point() = 0;
+    virtual void *data_ptr() = 0;
+    virtual size_t length_in_bytes() = 0;
+
     virtual void clear() = 0;
     virtual void upload() = 0;
 };
@@ -40,41 +46,25 @@ template <typename T>
 class MappedVertexBuffer;
 
 class SharedVertexBuffer {
+public:
 
-    public:
-
-    void init(size_t size) {
-        VGLIDX buf_t = 0;
-        glGenBuffers(1, &(buf_t));
-        this->m_buf_id = buf_t;
-        glBindBuffer(GL_ARRAY_BUFFER, this->m_buf_id);
-        char *data_t = (char *) malloc(size * 2);
-        glBufferData(GL_ARRAY_BUFFER, size * 2, data_t, GL_DYNAMIC_DRAW);
-        free(data_t);
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-        this->m_size = size;
-        this->mapped_end = 0;
-    }
+    void init(size_t size);
 
     void clear() {
         for (auto map : m_mappings) {
             map->clear(); }
     }
 
-    inline int id() { return this->m_buf_id; }
+    inline int id() {
+        return this->m_buf_id; }
 
-    void upload() {
-        glBindBuffer(GL_ARRAY_BUFFER, this->m_buf_id);
-        for (auto map : m_mappings) {
-            map->upload(); }
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
+    void bind();
+    void upload();
 
     template<typename T>
     MappedVertexBuffer<T> *map(size_t count);
 
-    private:
+private:
 
     int m_buf_id = -1;
     size_t m_size = 0;
@@ -83,10 +73,10 @@ class SharedVertexBuffer {
 
 };
 
+// 150901: maybe we donot need it later
 template <typename T>
 class MappedVertexBuffer : public MappedVertexBufferBase {
-
-    public:
+public:
 
     MappedVertexBuffer(SharedVertexBuffer *parent, size_t count, size_t map_start) :
             m_parent(parent), m_start(map_start), m_count(count) { }
@@ -100,24 +90,25 @@ class MappedVertexBuffer : public MappedVertexBufferBase {
         return 0;
     }
 
-    void upload(size_t start, size_t count) {
-        glBindBuffer(GL_ARRAY_BUFFER, this->m_parent->id());
-        glBufferSubData(GL_ARRAY_BUFFER, this->m_start + sizeof(T) * start, sizeof(T) * count,
-                        (void *) ((char *) m_data.data() + sizeof(T) * start));
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
-    }
-
     void clear() override {
         this->m_data.clear(); }
-
-    void upload() override {
-        glBufferSubData(GL_ARRAY_BUFFER, this->m_start, sizeof(T) * m_data.size(), (void *) m_data.data()); }
-
     void bind() {
-        glBindBuffer(GL_ARRAY_BUFFER, this->m_parent->id()); }
+        parent()->bind(); }
+    // TODO: ...
+    void upload() {
+        parent()->upload(); }
 
-    public:
+    SharedVertexBuffer *parent() {
+        return m_parent; }
 
+    inline size_t start_point() override {
+        return m_start; }
+    inline void *data_ptr() override {
+        return (void *) m_data.data(); }
+    inline size_t length_in_bytes() override {
+        return m_count * sizeof(T); }
+
+public:
     SharedVertexBuffer *m_parent = nullptr;
     size_t m_start = 0;
     size_t m_count = 0;
@@ -129,12 +120,6 @@ enum CommandType {
     CDefault,
     CTest,
     CDuneTerrain
-};
-
-enum DispatchCommandType {
-    DDefault,
-    DSpriteDispatch,
-    DDuneTerrain
 };
 
 class StannumRenderer;
@@ -190,17 +175,7 @@ public:
     void init();
     void destroy();
 
-    void render_dispatch(std::shared_ptr<RenderQueue> queue) {
-        ASSERT(queue != nullptr);
-
-        Verdandi::clear_depth();
-        glClear(GL_COLOR_BUFFER_BIT);
-        for (auto cmd : queue->commands) {
-            cmd->execute(this); }
-        for (auto cmd : queue->dispatch_commands) {
-            cmd->execute(this); }
-        queue->clear();
-    }
+    void render_dispatch(std::shared_ptr<RenderQueue> queue);
 
     inline ShaderCache *shaders() { return &this->m_shader_cache; }
 
@@ -208,7 +183,6 @@ public:
         return m_vao; }
 
 private:
-
     friend class CommandSprite;
     friend class DispatchCommandSprite;
 

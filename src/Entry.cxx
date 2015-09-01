@@ -48,6 +48,7 @@
 #include "Hammer/HammerHeightfield.hxx"
 
 #include "Dune/Dune.hxx"
+#include "Dune/DuneDispatchCommand.hxx"
 #include "Guardian/Guardian.hxx"
 
 #include <string>

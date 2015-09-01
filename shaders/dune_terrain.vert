@@ -7,7 +7,7 @@ out vec3 frag_normal;
 layout(location = 0) in vec2 position;
 
 // these variables have nothing to do with fragment.
-uniform vec2 chunk_position;
+uniform vec3 chunk_position;
 // the size of the whole terrain in total (in meters)
 uniform vec2 total_size;
 // the texcoord of left-top corner point
@@ -53,11 +53,12 @@ void main() {
     vec3 light_dir = vec3(1.5, 1.5, 1);
     frag_light_dir = normalize(light_dir);
 
-    vec2 position_this = position + chunk_position;
+    vec3 position_this = vec3(position, 0) + chunk_position;
     vec2 texcoord_heightmap = vec2(position_this.x / total_size.x, position_this.y / total_size.y);
     vec4 height = parse_heightfield(heightmap, texcoord_heightmap);
     frag_normal = normalize(height.xyz);
-    vec4 position_final = vec4(position_this.x, position_this.y, height.w, 1);
+    vec4 position_final = vec4(position_this.x, position_this.y,
+                                position_this.z + height.w, 1);
 
     // magic: number of textures inside cache
     frag_texcoord = vec2(cache_position.x + position.x / chunk_size.x / 8,

@@ -46,6 +46,8 @@ class gl_shader_ext : public gl_shader {
 
 	virtual void disable_attributes() { }
 
+	void postInitialize();
+
 };
 
 }

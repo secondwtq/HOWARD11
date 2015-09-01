@@ -1,19 +1,22 @@
 //
-// Created by secondwtq <lovejay-lovemusic@outlook.com> 2015/09/01.
+// Made by secondwtq <lovejay-lovemusic@outlook.com> with Love.
+//
+// Date: 2015-09-01
 // Copyright (c) 2015 SCU ISDC All rights reserved.
 //
-// This file is part of ISDCNext.
+// This file is part of the HOWARD11 Game Engine.
 //
-// We have always treaded the borderland.
+// WE ARE STANDING ON THE EDGE.
 //
 
-#include "DuneFrustum.hxx"
+#include "Frustum.hxx"
 
 #include <glm/glm.hpp>
 
 namespace Howard {
 namespace Dolly {
 
+// ruh.li/CameraViewFrustum.html
 FrustumBox FrustumBox::createFromMatrix(const glm::mat4& view_proj) {
     FrustumBox ret;
     FrustumPlane (&planes)[FrustumPlaneType::PEnd] = ret.m_planes;
@@ -56,6 +59,7 @@ FrustumBox FrustumBox::createFromMatrix(const glm::mat4& view_proj) {
     return ret;
 }
 
+// www.rastertek.com/dx10tut16.html
 bool FrustumBox::checkAABB(const HAnyCoord& center, const HAnyCoord& half_extends) const {
     for (size_t i = 0; i < 6; i++) {
         // ---

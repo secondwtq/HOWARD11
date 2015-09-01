@@ -19,9 +19,7 @@
 std::string readfile(const std::string& filename);
 
 bool js_print(JSContext *context, unsigned int argc, JS::Value *vp);
-
 void js_collectgarbage(xoundation::spd::context_reference ctx);
-
 bool js_cast(JSContext *ctx, unsigned int argc, JS::Value *vp);
 
 #endif // HOWARD11_JSFUNCTIONS_HXX

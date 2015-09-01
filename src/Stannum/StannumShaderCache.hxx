@@ -14,18 +14,16 @@
 
 #include "StannumCommon.hxx"
 
-#include "Verdandi/GLShaderExt.hxx"
-
 namespace Howard {
-
+namespace Verdandi {
+class gl_shader_ext;
+}
 namespace Stannum {
 
 class ShaderCache {
-
-    public:
+public:
 
     void load_shaders();
-
     void destroy_shaders();
 
     template <typename T>
@@ -39,7 +37,6 @@ class ShaderCache {
 };
 
 }
-
 }
 
 #endif // HOWARD11_STANNUMSHADERCACHE_HXX

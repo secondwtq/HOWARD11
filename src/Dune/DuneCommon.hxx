@@ -17,6 +17,13 @@
 namespace Howard {
 namespace Dune {
 
+enum DuneTextureType {
+    DColor,
+    DNormal,
+    DSpecular,
+    DEnd
+};
+
 struct VertFormatDuneTerrain {
 
     VertFormatDuneTerrain() :
@@ -25,10 +32,6 @@ struct VertFormatDuneTerrain {
             : position(p) { }
 
     glm::vec2 position;
-};
-
-struct VertFormatDuneCache {
-
 };
 
 }

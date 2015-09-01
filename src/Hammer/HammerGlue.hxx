@@ -13,6 +13,10 @@
 #define HOWARD11_HAMMERGLUE_HXX
 
 #include "Common.hxx"
+
+// this file is to be used internally only
+//  (mainly Hammer .cxx source files)
+//  do not include in any other module!
 #include "Hammer.hxx"
 #include "HammerTransform.hxx"
 #include "HammerPrimitiveBody.hxx"

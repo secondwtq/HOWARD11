@@ -12,9 +12,15 @@
 #ifndef HOWARD11_GLCOMMON_HXX
 #define HOWARD11_GLCOMMON_HXX
 
-#include "thirdpt/howardgl.hxx"
+// TODO: platform dependent?
+typedef unsigned int VGLVertexArray;
+typedef unsigned int VGLIDX;
+typedef unsigned int VGLEnum;
 
-typedef GLuint VGLVertexArray;
-typedef GLuint VGLIDX;
+enum BufferUsage {
+    UStatic,
+    UDynamic,
+    UStream
+};
 
 #endif // HOWARD11_GLCOMMON_HXX

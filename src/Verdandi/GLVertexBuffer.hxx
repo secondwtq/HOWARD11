@@ -12,6 +12,9 @@
 
 #include "GLCommon.hxx"
 #include "GLFoundation.hxx"
+#include "GLHelper.hxx"
+
+#include "thirdpt/howardgl.hxx"
 
 #include "Debug.hxx"
 
@@ -20,20 +23,6 @@
 
 namespace Howard {
 namespace Verdandi {
-
-class Helper {
-public:
-    inline static GLenum glBufferUsage(BufferUsage usage) {
-        switch (usage) {
-            case UStatic:
-                return GL_STATIC_DRAW;
-            case UDynamic:
-                return GL_DYNAMIC_DRAW;
-            case UStream:
-                return GL_STREAM_DRAW;
-        }
-    }
-};
 
 template <typename T>
 class VertexBufferScope {
@@ -97,8 +86,7 @@ public:
     explicit VertexBufferSingle(const shared_c&) { }
 
     ~VertexBufferSingle() {
-        glDeleteBuffers(1, &m_glid);
-    }
+        glDeleteBuffers(1, &m_glid); }
 
 private:
 

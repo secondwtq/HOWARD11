@@ -16,19 +16,23 @@
 
 #include "DuneCommon.hxx"
 
-#include "Stannum/Stannum.hxx"
 #include "Stannum/StannumTexture.hxx"
-#include "Misc/Transform.hxx"
 #include "Verdandi/GLVertexArray.hxx"
 
 #include <vector>
 #include <memory>
-#include <map>
-#include <unordered_map>
-#include <list>
 
 namespace Howard {
-
+namespace Dolly {
+class Camera;
+}
+namespace Verdandi {
+template <typename T>
+class VertexBufferSingle;
+}
+namespace Stannum {
+class StannumRenderer;
+}
 namespace Guardian {
 class GuardianCanvas;
 }
@@ -46,14 +50,9 @@ const size_t cellsPerChunkY = 16;
 const size_t gridPerCellX = 4;
 const size_t gridPerCellY = 4;
 
-}
+const size_t heightSpanMax = 192;
 
-enum DuneTextureType {
-    DColor,
-    DNormal,
-    DSpecular,
-    DEnd
-};
+}
 
 class DuneLayer;
 class DuneChunk;
@@ -72,6 +71,10 @@ namespace Dune {
 class DuneTerrain {
 public:
 
+    // 150901: we supports non-zero origin now with setOrigin(),
+    //  but since most of cases we just constructs it at zero
+    //  so we donot provide it as a parameter in ctor, though
+    //  it calls setOrigin() with default { };
     DuneTerrain(const HPixel& num_chunks,
             Stannum::StannumRenderer *renderer);
 
@@ -79,7 +82,6 @@ public:
         vertexBuffer() { return m_vert_buffer; }
 
     void setHeightmap(SHARED(Verdandi::TextureImage) heightmap);
-
     inline SHARED(Verdandi::TextureImage) heightmap() {
         return m_heightmap; }
 
@@ -101,6 +103,15 @@ public:
         return m_chunks[x][y];
     }
 
+    inline HAnyCoord origin() const {
+        return m_origin; }
+    // this, effectively, sets the position
+    //  of it's chunks
+    //
+    //  and is called by the ctor after
+    //  the chunks created
+    void setOrigin(const HAnyCoord& origin);
+
     HPixel m_num_chunks;
     std::vector<std::vector<SHARED(DuneChunk)>> m_chunks;
     HPixel m_total_size;
@@ -115,6 +126,7 @@ public:
 
 private:
 
+    HAnyCoord m_origin;
     void initializeVAO();
 };
 
@@ -124,7 +136,9 @@ private:
 class DuneChunk : public std::enable_shared_from_this<DuneChunk> {
 public:
 
-    DuneChunk(DuneTerrain *parent, const HPixel& position);
+    DuneChunk(DuneTerrain *parent) :
+            DuneChunk(parent, { }) { }
+    DuneChunk(DuneTerrain *parent, const HAnyCoord& position);
 
     inline bool cached() const {
         return !m_cache_data.expired(); }
@@ -139,8 +153,10 @@ public:
     }
 
     // world position (in meters) of left-top corner
-    inline HPixel position() const {
+    //  150901: changed from HPixel to HAnyCoord
+    inline HAnyCoord position() const {
         return m_position; }
+    void setPosition(const HAnyCoord& position);
 
     inline std::shared_ptr<DuneTextureCacheData> cacheData() {
         ASSERT(cached());
@@ -183,34 +199,7 @@ private:
     std::weak_ptr<DuneTextureCacheData> m_cache_data;
     DuneTerrain *m_parent;
     // NOTE: refering to the position of left-top corner
-    HPixel m_position;
-};
-
-struct DuneTextureCacheData {
-    std::weak_ptr<DuneChunk> chunk;
-    std::weak_ptr<DuneTextureCache> cache;
-
-    inline const glm::u8vec2& index() const {
-        return m_index; }
-
-    // for the uniform vec2 *cache_position* in
-    //  Dune shader, we accessorized these properties
-    inline const glm::vec2& texcoord() const {
-        return m_texcoord; }
-
-    inline void setIndex(const glm::u8vec2& idx) {
-        m_texcoord = (glm::vec2) idx / 8.0f;
-        m_index = idx; }
-
-    inline void updateChunkWithSelf(std::weak_ptr<DuneTextureCacheData> self) {
-        ASSERT(!chunk.expired());
-        ASSERT(!self.expired() && self.lock().get() == this);
-        chunk.lock()->setCacheData(self);
-    }
-
-private:
-    glm::vec2 m_texcoord;
-    glm::u8vec2 m_index;
+    HAnyCoord m_position;
 };
 
 class DuneTextureSet {
@@ -249,22 +238,6 @@ class Helper {
 public:
     static std::vector<VertFormatDuneTerrain> generateChunkVertex(
             HPixel count_faces, float cell_size);
-};
-
-class DispatchCommandDuneTerrain : public Stannum::StannumDispatchCommand {
-public:
-
-    DispatchCommandDuneTerrain(DuneTerrain *terrain, Dolly::Camera *camera)
-            : m_terrain(terrain), m_camera(camera) { }
-
-    Stannum::DispatchCommandType commandType() const override {
-        return Stannum::DispatchCommandType::DDuneTerrain; }
-
-    void execute(Stannum::StannumRenderer *renderer) override;
-
-private:
-    DuneTerrain *m_terrain;
-    Dolly::Camera *m_camera;
 };
 
 }

@@ -14,6 +14,7 @@
 #include "Verdandi/GLShader.hxx"
 #include "Verdandi/GLShaderExt.hxx"
 #include "Verdandi/GLShaderExtDef.hxx"
+#include "thirdpt/howardgl.hxx"
 
 #include "Debug.hxx"
 

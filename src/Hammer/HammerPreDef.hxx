@@ -12,33 +12,11 @@
 #ifndef HOWARD11_HAMMERPREDEF_HXX
 #define HOWARD11_HAMMERPREDEF_HXX
 
-namespace physx {
-
-class PxFoundation;
-class PxPhysics;
-class PxCooking;
-class PxScene;
-class PxDefaultCpuDispatcher;
-class PxProfileZoneManager;
-class PxControllerManager;
-
-namespace debugger {
-namespace comm {
-class PvdConnection;
-}
-}
-
-class PxMaterial;
-class PxRigidActor;
-class PxRigidStatic;
-class PxRigidDynamic;
-
-class PxHeightField;
-}
-
 namespace Howard {
 namespace Hammer {
 class Material;
+class HammerFoundation;
+class HammerActorNodeBase;
 class HammerActorNode;
 class HammerHeightfield;
 }

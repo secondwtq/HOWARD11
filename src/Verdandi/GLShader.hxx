@@ -9,10 +9,10 @@
 #ifndef __MarXsCube__GLShader__
 #define __MarXsCube__GLShader__
 
+#include "GLCommon.hxx"
 #include <string>
 
 namespace Howard {
-
 namespace Verdandi {
 
 enum SHADERTYPE {
@@ -39,6 +39,9 @@ class gl_shader {
 
     void destroy();
 
+	inline VGLIDX id() {
+		return obj_id; }
+
 	virtual ~gl_shader() { }
 
 	private:
@@ -48,7 +51,6 @@ class gl_shader {
 };
 
 }
-
 }
 
 #endif /* defined(__MarXsCube__GLShader__) */

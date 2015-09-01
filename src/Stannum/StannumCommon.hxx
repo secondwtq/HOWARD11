@@ -34,6 +34,12 @@ struct VertFormatSprite {
     glm::vec4 multiply;
 };
 
+enum DispatchCommandType {
+    DDefault,
+    DSpriteDispatch,
+    DDuneTerrain
+};
+
 }
 }
 

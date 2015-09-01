@@ -12,11 +12,15 @@
 #ifndef HOWARD11_HAMMERHEIGHTFIELD_HXX
 #define HOWARD11_HAMMERHEIGHTFIELD_HXX
 
+#include "Common.hxx"
 #include "HammerPreDef.hxx"
-
-#include "Stannum/StannumTexture.hxx"
+#include "HammerPreDefExternal.hxx"
+#include <memory>
 
 namespace Howard {
+namespace Verdandi {
+class Image;
+}
 namespace Hammer {
 
 class HammerHeightfield {
@@ -35,11 +39,11 @@ public:
 
     void generateHeightfield();
 
-    void setDataImage(std::shared_ptr<Verdandi::Image> image);
+    void setDataImage(SHARED(Verdandi::Image) image);
 
 private:
 
-    std::shared_ptr<Verdandi::Image> m_data_img;
+    SHARED(Verdandi::Image) m_data_img;
     physx::PxHeightField *m_heightfield = nullptr;
     Material *m_material;
 };

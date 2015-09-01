@@ -106,6 +106,18 @@ glm::mat4 Helper::generateMVPForTarget(const TextureImage *target) {
     return projection;
 }
 
+void GuardianElementTerrainLayersGroup::setCacheIndex(const glm::u8vec2& idx) {
+    ASSERT(idx.x >= 0 && idx.x < 8);
+    ASSERT(idx.y >= 0 && idx.y < 8);
+    this->m_position = idx;
+}
+
+void GuardianElementTerrainLayersGroup::addLayer(std::weak_ptr<Dune::DuneLayer> layer) {
+    ASSERT(numberOfLayers() < 4);
+    ASSERT(!layer.expired());
+    m_layers.push_back(layer);
+}
+
 void GuardianElementTerrainLayersGroup::paint(GuardianCanvas *canvas) {
     using namespace Stannum;
     using namespace Verdandi;

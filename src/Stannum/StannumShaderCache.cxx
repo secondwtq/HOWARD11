@@ -77,6 +77,7 @@ void ShaderCache::load_shaders() {
 
         std::cout << shader_guardiancache->log(Verdandi::SHADERTYPE::VERTEX);
         std::cout << shader_guardiancache->log(Verdandi::SHADERTYPE::FRAG);
+        shader_guardiancache->postInitialize();
 
         m_shaders[ShaderType::GuardianCache] = shader_guardiancache;
     }

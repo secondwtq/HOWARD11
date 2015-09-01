@@ -15,7 +15,6 @@
 #include <glm/glm.hpp>
 
 #include "Common.hxx"
-#include "DuneFrustum.hxx"
 
 namespace Howard {
 namespace Dolly {

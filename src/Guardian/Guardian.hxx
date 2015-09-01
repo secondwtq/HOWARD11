@@ -12,17 +12,24 @@
 #ifndef HOWARD11_GUARDIAN_HXX
 #define HOWARD11_GUARDIAN_HXX
 
+#include "Common.hxx"
+#include "Verdandi/GLCommon.hxx"
 #include "GuardianCommon.hxx"
 
-#include "Verdandi/GLVertexArray.hxx"
-#include "Verdandi/GLVertexBuffer.hxx"
-#include "Stannum/StannumTexture.hxx"
+#include <glm/glm.hpp>
 
+#include <vector>
 #include <memory>
 #include <functional>
 
 namespace Howard {
 
+namespace Verdandi {
+class TextureImage;
+class VertexArray;
+template <typename T>
+class VertexBufferSingle;
+}
 namespace Stannum {
 class StannumRenderer; }
 
@@ -99,19 +106,11 @@ public:
 
     void paint(GuardianCanvas *canvas) override;
 
-    void setCacheIndex(const glm::u8vec2& idx) {
-        ASSERT(idx.x >= 0 && idx.x < 8);
-        ASSERT(idx.y >= 0 && idx.y < 8);
-        this->m_position = idx;
-    }
+    void setCacheIndex(const glm::u8vec2& idx);
 
     inline size_t numberOfLayers() const {
         return m_layers.size(); }
-    void addLayer(std::weak_ptr<Dune::DuneLayer> layer) {
-        ASSERT(numberOfLayers() < 4);
-        ASSERT(!layer.expired());
-        m_layers.push_back(layer);
-    }
+    void addLayer(std::weak_ptr<Dune::DuneLayer> layer);
 
 private:
     std::vector<std::weak_ptr<Dune::DuneLayer>> m_layers;

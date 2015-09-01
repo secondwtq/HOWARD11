@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(HOWARD11)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O0")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
 
 if(MSVC)
     message("Compiling with MSVC, well maybe it's unsupported")
@@ -43,13 +43,14 @@ set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx
     FSMCommon.hxx FSMLogger.hxx FSMHelper.hxx)
 
 set(SOURCE_VERDANDI GLCommon.hxx GLFoundation.hxx GLFoundation.cxx
-    GLShader.hxx GLShader.cxx GLShaderExt.hxx GLVertexArray.cxx
+    GLShader.hxx GLShader.cxx GLHelper.cxx GLShaderExt.hxx GLVertexArray.cxx
     GLShaderExtDef.hxx GLVertexBuffer.hxx GLVertexArray.hxx
-        GLVertexBufferExt.hxx)
+        GLVertexBufferExt.hxx GLHelper.hxx)
 
 set(SOURCE_STANNUM StannumCommon.hxx Stannum.hxx Stannum.cxx StannumShaderCache.hxx
     StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx StannumSprite.hxx
-    StannumAtlasNode.cxx StannumAtlasNode.hxx StannumSpriteShader.cxx StannumSpriteShader.hxx)
+    StannumAtlasNode.cxx StannumAtlasNode.hxx StannumSpriteShader.cxx StannumSpriteShader.hxx
+        StannumTextureAtlas.cxx StannumTextureAtlas.hxx)
 
 set(SOURCE_DWIGHT HowardBase.hxx Node.hxx Node.cxx Handle.hxx
     RootNode.hxx HandleManager.hxx SceneManager.hxx ScriptNode.hxx
@@ -62,14 +63,16 @@ set(SOURCE_FACERCORE FacerEvent.hxx FacerEventKey.hxx FacerEvent.cxx
 
 set(SOURCE_THIRDPT howardgl.hxx stb.cxx mozjs.hxx physx.hxx stb_image.hxx stb_image_resize.hxx)
 
-set(SOURCE_MISC Transform.hxx Transform.cxx hassert.hxx AtTheVeryBeginning.hxx AtTheVeryBeginning.cxx)
+set(SOURCE_MISC Transform.hxx Transform.cxx hassert.hxx AtTheVeryBeginning.hxx AtTheVeryBeginning.cxx
+    Frustum.cxx Frustum.hxx)
 
 set(SOURCE_HAMMER Hammer.cxx HammerActorNode.cxx HammerTransform.cxx HammerGlue.cxx
     HammerPrimitiveBody.cxx HammerHeightfield.cxx Hammer.hxx HammerActorNode.hxx
     HammerTransform.hxx HammerGlue.hxx HammerPrimitiveBody.hxx HammerPreDef.hxx
-    HammerHeightfield.hxx)
+    HammerHeightfield.hxx HammerPreDefPhysX.hxx HammerPreDefExternal.hxx)
 
-set(SOURCE_DUNE Dune.cxx DuneShader.cxx Dune.hxx DuneCommon.hxx DuneShader.hxx)
+set(SOURCE_DUNE Dune.cxx DuneShader.cxx DuneDispatchCommand.cxx DuneTextureCache.cxx
+        Dune.hxx DuneCommon.hxx DuneShader.hxx DuneDispatchCommand.hxx DuneTextureCache.hxx)
 
 set(SOURCE_GUARDIAN Guardian.cxx GuardianCommon.cxx GuardianShader.cxx GuardianCacheShader.cxx
         Guardian.hxx GuardianCommon.hxx GuardianShader.hxx GuardianCacheShader.hxx)
@@ -90,7 +93,7 @@ set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} 
 
 set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx
         src/GLFWEvents.hxx src/GLFWEvents.cxx src/JSFunctions.hxx src/JSFunctions.cxx
-        src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Asset.cxx src/Stannum/StannumTextureAtlas.cxx src/Stannum/StannumTextureAtlas.hxx src/Misc/DuneFrustum.cxx src/Misc/DuneFrustum.hxx)
+        src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Asset.cxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 
