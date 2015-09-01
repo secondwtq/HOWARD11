@@ -83,6 +83,12 @@ public:
 
     HAnyCoord heightfieldScale() const;
 
+    inline HPixel sizePerChunk2D() const {
+        const static HPixel ret { Constants::cellsPerChunkX * Constants::cellSize,
+            Constants::cellsPerChunkY * Constants::cellSize };
+        return ret;
+    }
+
     inline SHARED(DuneChunk) chunkAt(size_t x, size_t y) {
         ASSERT(x < m_total_size.x && y < m_total_size.y);
         return m_chunks[x][y];
@@ -174,12 +180,17 @@ public:
     const std::vector<std::shared_ptr<DuneLayer>>& layers() const {
         return m_layers; }
 
-    size_t numberOfLayers() const {
+    inline size_t numberOfLayers() const {
         return m_layers.size(); }
 
-    void appendLayer(std::shared_ptr<DuneLayer> layer) {
+    inline void appendLayer(std::shared_ptr<DuneLayer> layer) {
         ASSERT(layer != nullptr);
         m_layers.push_back(layer);
+    }
+
+    inline SHARED(DuneLayer) layerAt(size_t idx) {
+        ASSERT(idx < numberOfLayers());
+        return m_layers[idx];
     }
 
     void updateCachedTexture();
@@ -202,13 +213,27 @@ struct DuneTextureCacheData {
     std::weak_ptr<DuneChunk> chunk;
     std::weak_ptr<DuneTextureCache> cache;
 
-    glm::u8vec2 index;
+    inline const glm::u8vec2& index() const {
+        return m_index; }
+
+    // for the uniform vec2 *cache_position* in
+    //  Dune shader, we accessorized these properties
+    inline const glm::vec2& texcoord() const {
+        return m_texcoord; }
+
+    inline void setIndex(const glm::u8vec2& idx) {
+        m_texcoord = (glm::vec2) idx / 8.0f;
+        m_index = idx; }
 
     inline void updateChunkWithSelf(std::weak_ptr<DuneTextureCacheData> self) {
         ASSERT(!chunk.expired());
         ASSERT(!self.expired() && self.lock().get() == this);
         chunk.lock()->setCacheData(self);
     }
+
+private:
+    glm::vec2 m_texcoord;
+    glm::u8vec2 m_index;
 };
 
 class DuneTextureSet {
@@ -216,6 +241,10 @@ public:
 
     std::shared_ptr<Verdandi::TextureImage> texture(DuneTextureType type) {
         return m_textures[type]; }
+
+    DuneTextureSet& setTexture(DuneTextureType type,
+            SHARED(Verdandi::TextureImage) texture) {
+        m_textures[type] = texture; return *this; }
 
     std::shared_ptr<Verdandi::TextureImage> m_textures[DuneTextureType::DEnd];
 };

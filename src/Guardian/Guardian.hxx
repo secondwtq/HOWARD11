@@ -24,8 +24,7 @@
 namespace Howard {
 
 namespace Stannum {
-class StannumRenderer;
-}
+class StannumRenderer; }
 
 namespace Guardian {
 

@@ -40,7 +40,7 @@ HammerActorNodeStatic::HammerActorNodeStatic(RootNode *scene, const Transform& t
         : HammerActorNodeBase(scene, transform), m_transform(transform),
         m_actor(Foundation.hammerFoundation().physics().
                 createRigidStatic(Glue::pxTransform(transform))) {
-
+    m_actor->userData = this;
 }
 
 void HammerActorNodeBase::addToScene(HammerScene *scene) {
@@ -48,12 +48,10 @@ void HammerActorNodeBase::addToScene(HammerScene *scene) {
 }
 
 Transform HammerActorNode::transform() const {
-    return m_transform;
-}
+    return m_transform; }
 
 void HammerActorNode::addForce(const HAnyCoord& coord) {
-    m_actor->addForce(Glue::pxCoord(coord));
-}
+    m_actor->addForce(Glue::pxCoord(coord)); }
 
 void HammerActorNode::addAcceleration(const HAnyCoord& acc) {
     m_actor->addForce(Glue::pxCoord(acc), physx::PxForceMode::eACCELERATION);

@@ -52,17 +52,24 @@ void main() {
     vec4 l3 = layertex(texture3, mask3, 2);
     vec4 l4 = layertex(texture4, mask4, 3);
 
-    float alpha_sum = l1.a + l2.a + l3.a + l4.a;
-    vec3 final = vec3(0.0, 0.0, 0.0);
+    // magic: show the height only if we have no layer
+    //  but ATTENTION: may cause problems when #layers > 4
+    //  in one chunk, that is, calling this shader multiple
+    //  times for the same chunk/cache entry.
+    vec3 final = vec3(1.0, 1.0, 1.0);
     final = mix(final, l1.rgb, l1.a);
     final = mix(final, l2.rgb, l2.a);
     final = mix(final, l3.rgb, l3.a);
     final = mix(final, l4.rgb, l4.a);
 
+    float alpha_sum = l1.a + l2.a + l3.a + l4.a;
     // vec3 final = l1.rgb * (l1.a / alpha_sum) +
     //         l2.rgb * (l2.a / alpha_sum) +
     //         l3.rgb * (l3.a / alpha_sum) +
     //         l4.rgb * (l4.a / alpha_sum);
 
+    // for multiple drawcalls, use
+    //  alpha_sum for blending
+//    color = vec4(final, alpha_sum);
     color = vec4(final, 1.0);
 }

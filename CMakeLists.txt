@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.0)
 project(HOWARD11)
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O3")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++11 -O0")
 
 if(MSVC)
     message("Compiling with MSVC, well maybe it's unsupported")
@@ -43,8 +43,9 @@ set(SOURCE_FSM FSM.hxx FSM.cxx FSMProxyTemplates.hxx FSMStream.hxx
     FSMCommon.hxx FSMLogger.hxx FSMHelper.hxx)
 
 set(SOURCE_VERDANDI GLCommon.hxx GLFoundation.hxx GLFoundation.cxx
-    GLShader.hxx GLShader.cxx GLShaderExt.hxx
-    GLShaderExtDef.hxx GLVertexBuffer.hxx)
+    GLShader.hxx GLShader.cxx GLShaderExt.hxx GLVertexArray.cxx
+    GLShaderExtDef.hxx GLVertexBuffer.hxx GLVertexArray.hxx
+        GLVertexBufferExt.hxx)
 
 set(SOURCE_STANNUM StannumCommon.hxx Stannum.hxx Stannum.cxx StannumShaderCache.hxx
     StannumShaderCache.cxx StannumTexture.hxx StannumTexture.cxx StannumSprite.hxx
@@ -70,8 +71,8 @@ set(SOURCE_HAMMER Hammer.cxx HammerActorNode.cxx HammerTransform.cxx HammerGlue.
 
 set(SOURCE_DUNE Dune.cxx DuneShader.cxx Dune.hxx DuneCommon.hxx DuneShader.hxx)
 
-set(SOURCE_GUARDIAN Guardian.cxx GuardianCommon.cxx GuardianShader.cxx Guardian.hxx
-    GuardianCommon.hxx GuardianShader.hxx)
+set(SOURCE_GUARDIAN Guardian.cxx GuardianCommon.cxx GuardianShader.cxx GuardianCacheShader.cxx
+        Guardian.hxx GuardianCommon.hxx GuardianShader.hxx GuardianCacheShader.hxx)
 
 prepend(SOURCE_FSM "FSM" ${SOURCE_FSM})
 prepend(SOURCE_VERDANDI Verdandi ${SOURCE_VERDANDI})
@@ -87,8 +88,9 @@ prepend(SOURCE_GUARDIAN Guardian ${SOURCE_GUARDIAN})
 set(SOURCE_ALL ${SOURCE_ALL} ${SOURCE_FSM} ${SOURCE_VERDANDI} ${SOURCE_STANNUM} ${SOURCE_DWIGHT}
     ${SOURCE_FACERCORE} ${SOURCE_THIRDPT} ${SOURCE_MISC} ${SOURCE_HAMMER} ${SOURCE_DUNE} ${SOURCE_GUARDIAN})
 
-set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx src/Asset.cxx src/GLFWEvents.hxx src/GLFWEvents.cxx
-        src/JSFunctions.hxx src/JSFunctions.cxx src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Verdandi/GLVertexBufferExt.hxx src/Guardian/GuardianCacheShader.cxx src/Guardian/GuardianCacheShader.hxx src/Verdandi/GLVertexArray.cxx src/Verdandi/GLVertexArray.hxx)
+set(SOURCE_OTHER src/Debug.hxx src/Common.hxx src/Asset.hxx src/Entry.cxx src/Acheron.hxx
+        src/GLFWEvents.hxx src/GLFWEvents.cxx src/JSFunctions.hxx src/JSFunctions.cxx
+        src/CABAL/CABAL.hxx src/CABAL/CABAL.cxx src/Asset.cxx src/Stannum/StannumTextureAtlas.cxx src/Stannum/StannumTextureAtlas.hxx src/Misc/DuneFrustum.cxx src/Misc/DuneFrustum.hxx)
 
 prepend(SOURCE_ALL src ${SOURCE_ALL})
 

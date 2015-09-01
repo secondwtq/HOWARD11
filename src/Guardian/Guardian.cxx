@@ -111,6 +111,9 @@ void GuardianElementTerrainLayersGroup::paint(GuardianCanvas *canvas) {
     using namespace Verdandi;
     using namespace Dune;
 
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
     auto shader = canvas->m_renderer->shaders()->get_shader
             <GuardianCacheShader>(ShaderType::GuardianCache);
     shader->use();

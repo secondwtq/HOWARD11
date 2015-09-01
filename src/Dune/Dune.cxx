@@ -21,6 +21,7 @@
 #include "FSM/FSMHelper.hxx"
 
 #include "Guardian/Guardian.hxx"
+#include "Misc/DuneFrustum.hxx"
 
 #include <vector>
 #include <glm/gtc/matrix_transform.hpp>
@@ -93,14 +94,30 @@ void DispatchCommandDuneTerrain::execute(Stannum::StannumRenderer *renderer) {
     using namespace Verdandi;
     using namespace AtTheVeryBeginning;
 
+    glm::mat4 view_projection;
+//    glm::mat4 view_projection_;
     {
-        for (auto chunks : m_terrain->m_chunks) {
-            for (auto chunk : chunks) {
-                if (!chunk->cached()) {
-                    chunk->cache();
-                }
-            }
+        glm::mat4 view = m_camera->view_mat;
+        glm::mat4 projection = glm::ortho(0.f, (float) Setting<WindowSetting>::instance()->actual_width,
+                (float) Setting<WindowSetting>::instance()->actual_height, 0.f, -16384.f, 16384.f);
+        view_projection = scale(projection, glm::vec3 { 1, 1, 1 } * m_camera->scale_factor) * view;
+    }
+
+    std::vector<DuneChunk *> chunks_to_render;
+    Dolly::FrustumBox frustum = Dolly::FrustumBox::createFromMatrix(view_projection);
+    for (auto chunks : m_terrain->m_chunks) {
+        for (auto chunk : chunks) {
+            // TODO: more accurate AABB, maybe with physics?
+            HAnyCoord center { (glm::vec2) chunk->position() + (glm::vec2) m_terrain->sizePerChunk2D() / 2.0f, 192 / 2.0f };
+            HAnyCoord half_extends { (glm::vec2) m_terrain->sizePerChunk2D() / 2.0f, 192 / 2.0f };
+            if (frustum.checkAABB(center, half_extends)) {
+                chunks_to_render.push_back(chunk.get()); }
         }
+    }
+
+    for (auto chunk : chunks_to_render) {
+        if (!chunk->cached()) {
+            chunk->cache(); }
     }
 
     auto *shader = renderer->shaders()->get_shader
@@ -108,38 +125,23 @@ void DispatchCommandDuneTerrain::execute(Stannum::StannumRenderer *renderer) {
     shader->use();
     VertexArrayScope vao(m_terrain->m_vao);
 
-    {
-        glm::mat4 view = m_camera->view_mat;
-        glm::mat4 projection = glm::ortho(0.f, (float) Setting<WindowSetting>::instance()->actual_width,
-                (float) Setting<WindowSetting>::instance()->actual_height, 0.f, -16384.f, 16384.f);
-        projection = scale(projection, glm::vec3 { 1, 1, 1 } * m_camera->scale_factor);
-        SET_UNIFORMAT4P(shader, model_view_and_projection, projection * view);
-    }
-
+    SET_UNIFORMAT4P(shader, model_view_and_projection, view_projection);
     if (m_terrain->heightmap() && m_terrain->heightmap()->ok()) {
-        BIND_TEXTUREP(shader, heightmap, m_terrain->heightmap()->id(), 0);
-    }
+        BIND_TEXTUREP(shader, heightmap, m_terrain->heightmap()->id(), 0); }
     SET_UNIFORM2P(shader, total_size, m_terrain->m_total_size);
-    SET_UNIFORM2P(shader, chunk_size, glm::vec2(
-            Constants::cellsPerChunkX * Constants::cellSize,
-            Constants::cellsPerChunkY * Constants::cellSize));
+    SET_UNIFORM2P(shader, chunk_size, m_terrain->sizePerChunk2D());
 
     // TODO: culling, without which the cache
     //  just does not work
     // TODO: instancing
-    for (auto chunks : m_terrain->m_chunks) {
-        for (auto chunk : chunks) {
-            ASSERT(chunk->cached());
-            glm::u8vec2 cacheidx = chunk->cacheData()->index;
-            glm::vec2 cachepos = { (float) cacheidx.x / 8.0,
-                    (float) cacheidx.y / 8.0 };
+    for (auto chunk : chunks_to_render) {
+        ASSERT(chunk->cached());
 
-            SET_UNIFORM2P(shader, chunk_position, chunk->position());
-            SET_UNIFORM2P(shader, cache_position, cachepos);
-            BIND_TEXTUREP(shader, texcache_diffuse,
+        SET_UNIFORM2P(shader, chunk_position, chunk->position());
+        SET_UNIFORM2P(shader, cache_position, chunk->cacheData()->texcoord());
+        BIND_TEXTUREP(shader, texcache_diffuse,
                     chunk->cacheData()->cache.lock()->textures()[DuneTextureType::DColor]->id(), 1);
-            glDrawArrays(GL_TRIANGLES, 0, m_terrain->vertexBuffer()->countElements());
-        }
+        glDrawArrays(GL_TRIANGLES, 0, m_terrain->vertexBuffer()->countElements());
     }
 }
 
@@ -155,8 +157,7 @@ DuneTextureCache::DuneTextureCache(Stannum::StannumRenderer *renderer)
 }
 
 void DuneTextureCache::initializeCanvas() {
-    m_canvas->setTarget(this->m_textures[0]);
-}
+    m_canvas->setTarget(this->m_textures[0]); }
 
 void DuneTerrain::cacheChunk(std::shared_ptr<DuneChunk> chunk) {
     ASSERT(chunk);
@@ -167,7 +168,7 @@ void DuneTerrain::cacheChunk(std::shared_ptr<DuneChunk> chunk) {
     if (!cache->full()) {
         pos = cache->pickAnEntryWhenNotFull();
     } else {
-        pos = cache->pickAndKickAnEntry()->index;
+        pos = cache->pickAndKickAnEntry()->index();
     }
     cache->insertCacheEntry(chunk, pos);
 }
@@ -200,7 +201,7 @@ std::weak_ptr<DuneTextureCacheData> DuneTextureCache::insertCacheEntry(
         << idx.x << ", " << idx.y << ")" << rn;
 
     std::shared_ptr<DuneTextureCacheData> data = std::make_shared<DuneTextureCacheData>();
-    data->index = idx;
+    data->setIndex(idx);
     data->chunk = chunk;
     data->cache = shared_from_this();
 
@@ -218,26 +219,26 @@ void DuneChunk::updateCachedTexture() {
     ASSERT(cached());
     std::shared_ptr<DuneTextureCacheData> data = m_cache_data.lock();
     std::shared_ptr<Guardian::GuardianElementTerrainLayersGroup> element =
-            std::make_shared<Guardian::GuardianElementTerrainLayersGroup>(data->index);
+            std::make_shared<Guardian::GuardianElementTerrainLayersGroup>(data->index());
     for (auto layer : layers()) {
         element->addLayer(layer); }
-    if (element->numberOfLayers()) {
+//    if (element->numberOfLayers()) {
         data->cache.lock()->canvas()->paintBlock([ &element ](Guardian::GuardianCanvas *canvas) {
             element->paint(canvas); });
-    }
+//    }
 }
 
 std::shared_ptr<DuneTextureCacheData> DuneTextureCache::pickAndKickAnEntry() {
-    std::shared_ptr<DuneTextureCacheData> ret = std::make_shared<DuneTextureCacheData>();
+    std::shared_ptr<DuneTextureCacheData> ret;
     if (empty()) {
-        ret->index = pickAnEntryWhenNotFull();
+        ret->setIndex(pickAnEntryWhenNotFull());
     } else {
         ASSERT(!m_queue.empty());
         std::weak_ptr<DuneTextureCacheData> datap = m_queue.back();
-        ASSERT(!datap.expired());
         {
             std::shared_ptr<DuneTextureCacheData> data = datap.lock();
-            memcpy(ret.get(), data.get(), sizeof(DuneTextureCacheData));
+            // you use memcpy()? fork you
+            ret = std::make_shared<DuneTextureCacheData>(*data);
         }
         {
             ASSERT(!ret->chunk.expired());
@@ -246,13 +247,13 @@ std::shared_ptr<DuneTextureCacheData> DuneTextureCache::pickAndKickAnEntry() {
             ASSERT(i != m_cache_cache.end() && !i->second.expired());
             m_cache_cache.erase(i);
 
-            ASSERT(entryHold(ret->index));
-            m_caches[ret->index.x][ret->index.y] = std::weak_ptr<DuneTextureCacheData>();
+            ASSERT(entryHold(ret->index()));
+            m_caches[ret->index().x][ret->index().y] = std::weak_ptr<DuneTextureCacheData>();
         }
         // if the only shared_ptr disappeared,
         //  the weak_ptr in DuneChunk would hopefully expire.
         log("Dune", L::Message) << "DuneTextureCache::pickAndKickAnEntry - kicking ("
-            << ret->index.x << ", " << ret->index.y << ")" << rn;
+            << ret->index().x << ", " << ret->index().y << ")" << rn;
         m_queue.pop_back();
     }
     return ret;

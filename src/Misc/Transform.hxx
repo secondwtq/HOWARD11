@@ -15,9 +15,9 @@
 #include <glm/glm.hpp>
 
 #include "Common.hxx"
+#include "DuneFrustum.hxx"
 
 namespace Howard {
-
 namespace Dolly {
 
 class Camera {
@@ -62,7 +62,6 @@ class IsometricCamera : public Camera {
 HPoint view_pos(const HAnyCoord& coord, const Camera *camera);
 
 }
-
 }
 
 #endif // HOWARD11_TRANSFORM_HXX

@@ -570,6 +570,16 @@ int main() {
         t = Image::createFromFile("stonewall2", "assets/tiles/stonewall2.png", IRGB);
         stonewall2->loadFromImage(*t.get());
 
+        std::shared_ptr<TextureImage> rocky(new TextureImage(
+                "tile_rocky", TextureWrapMode::WRepeat));
+        t = Image::createFromFile("rocky", "assets/tiles/rocky.png", IRGB);
+        rocky->loadFromImage(*t.get());
+
+        std::shared_ptr<TextureImage> rockygrass(new TextureImage(
+                "tile_rockygrass", TextureWrapMode::WRepeat));
+        t = Image::createFromFile("rockygrass", "assets/tiles/rockygrass.png", IRGB);
+        rockygrass->loadFromImage(*t.get());
+
         std::shared_ptr<TextureImage> layer1_mask(new TextureImage("layer1"));
         t = Image::createFromFile("layer1", "assets/layer1.png", IGRAY);
         layer1_mask->loadFromImage(*t.get());
@@ -578,24 +588,40 @@ int main() {
         t = Image::createFromFile("layer2", "assets/layer2.png", IGRAY);
         layer2_mask->loadFromImage(*t.get());
 
+        std::shared_ptr<TextureImage> layer3_mask(new TextureImage("layer3"));
+        t = Image::createFromFile("layer3", "assets/layer3.png", IGRAY);
+        layer3_mask->loadFromImage(*t.get());
+
+        std::shared_ptr<TextureImage> layer4_mask(new TextureImage("layer4"));
+        t = Image::createFromFile("layer4", "assets/layer4.png", IGRAY);
+        layer4_mask->loadFromImage(*t.get());
+
         using namespace Dune;
 
-        terrain = new DuneTerrain(HPixel(8, 8), &renderer);
+        terrain = new DuneTerrain(HPixel(16, 16), &renderer);
         terrain->setHeightmap(textureimage_heightmap);
-        terrain->m_caches[0]->textures()[0]->loadFromTextureImage(*textureimage_dunepretex.get());
-        terrain->m_caches[0]->initializeCanvas();
         auto tileset1 = std::make_shared<DuneTextureSet>();
         auto tileset2 = std::make_shared<DuneTextureSet>();
-        tileset1->m_textures[0] = sandsoil;
-        tileset2->m_textures[0] = stonewall2;
+        auto tileset3 = std::make_shared<DuneTextureSet>();
+        auto tileset4 = std::make_shared<DuneTextureSet>();
+        tileset1->setTexture(DuneTextureType::DColor, sandsoil);
+        tileset2->setTexture(DuneTextureType::DColor, stonewall2);
+        tileset3->setTexture(DuneTextureType::DColor, rocky);
+        tileset4->setTexture(DuneTextureType::DColor, rockygrass);
 
         auto layer1 = std::make_shared<DuneLayer>(tileset1, layer1_mask);
         auto layer2 = std::make_shared<DuneLayer>(tileset2, layer2_mask);
-        layer2->uvscale = { 4.0, 0.0, 0.0 };
+        auto layer3 = std::make_shared<DuneLayer>(tileset3, layer3_mask);
+        auto layer4 = std::make_shared<DuneLayer>(tileset4, layer4_mask);
 
-        auto chunk0 = terrain->chunkAt(0, 0);
+        layer2->uvscale = { 4.0, 0.0, 0.0 };
+        layer3->uvscale = layer4->uvscale = { 2.0, 0.0, 0.0 };
+
+        auto chunk0 = terrain->chunkAt(2, 1);
         chunk0->appendLayer(layer1);
         chunk0->appendLayer(layer2);
+        chunk0->appendLayer(layer3);
+        chunk0->appendLayer(layer4);
     }
 
     {

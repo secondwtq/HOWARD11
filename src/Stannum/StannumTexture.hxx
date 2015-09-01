@@ -227,15 +227,6 @@ private:
     const TextureImage *m_parent;
 };
 
-class TextureAtlas : public Asset {
-public:
-    TextureAtlas(const std::string& name);
-
-private:
-
-
-};
-
 }
 
 }
