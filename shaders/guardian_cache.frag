@@ -56,7 +56,7 @@ void main() {
     //  but ATTENTION: may cause problems when #layers > 4
     //  in one chunk, that is, calling this shader multiple
     //  times for the same chunk/cache entry.
-    vec3 final = vec3(1.0, 1.0, 1.0);
+    vec3 final = vec3(1.0);
     final = mix(final, l1.rgb, l1.a);
     final = mix(final, l2.rgb, l2.a);
     final = mix(final, l3.rgb, l3.a);

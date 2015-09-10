@@ -16,6 +16,6 @@ void main() {
     vec3 diffuse = texture(texcache_diffuse, frag_texcoord).rgb;
 
     // magic: overbright factor
-    vec3 ret = diffuse * light_intensity * 2.0;
+    vec3 ret = diffuse * light_intensity * 1.2;
     color = vec4(ret, 1.0);
 }

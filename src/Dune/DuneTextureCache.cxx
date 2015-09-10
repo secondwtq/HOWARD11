@@ -38,6 +38,7 @@ DuneTextureCache::DuneTextureCache(Stannum::StannumRenderer *renderer)
         std::string name = "DuneTextureCache_"; name += i;
         this->m_textures[i] = std::make_shared<Verdandi::TextureImage>(name);
         this->m_textures[i]->loadEmpty({ 4096, 4096 }, Verdandi::ImageChannelType::IRGB);
+		m_textures[i]->id();
     }
     initializeCanvas();
 }

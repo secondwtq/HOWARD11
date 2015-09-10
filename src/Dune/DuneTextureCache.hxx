@@ -16,6 +16,8 @@
 
 // this is an, somewhat,
 //  'implementation only' file
+//
+//  reference: timday.bitbucket.org/lru.html
 #include <glm/glm.hpp>
 #include <memory>
 #include <list>

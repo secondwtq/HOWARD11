@@ -40,11 +40,11 @@ static const VertFormatGuardianGeneral quad_vertex_buffer_data[] = {
 	{ { 1.0f,  1.0f }, { 1.f, 1.f } },
 };
 
-GuardianFoundation::GuardianFoundation() : m_vert_buffer(
+GuardianFoundation::GuardianFoundation() : m_vao(std::make_shared<VertexArray>()) ,m_vert_buffer(
         VertexBufferSingle<VertFormatGuardianGeneral>
         ::createWithData(BufferUsage::UStatic,
-        quad_vertex_buffer_data, sizeof(quad_vertex_buffer_data))),
-        m_vao(std::make_shared<VertexArray>()) {
+        quad_vertex_buffer_data, sizeof(quad_vertex_buffer_data)))
+        {
     initializeVAO();
 }
 

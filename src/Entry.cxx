@@ -540,8 +540,6 @@ int main() {
     Howard::Verdandi::TextureImage *textureimage_TestUnit = new Howard::Verdandi::TextureImage("TestUnit");
     std::shared_ptr<Howard::Verdandi::TextureImage> textureimage_heightmap(
             new Howard::Verdandi::TextureImage("duneheightmap"));
-    std::shared_ptr<Howard::Verdandi::TextureImage> textureimage_dunepretex(
-            new Howard::Verdandi::TextureImage("dunepretex"));
     {
         using namespace Howard;
         using namespace Howard::Verdandi;
@@ -557,9 +555,6 @@ int main() {
 
         t = Image::createFromFile("heightmap", "assets/heightmap.png", IGRAY);
         textureimage_heightmap->loadFromImage(*t.get());
-
-        t = Image::createFromFile("pretex", "assets/dune_pretex.png", IRGB);
-        textureimage_dunepretex->loadFromImage(*t.get());
 
         std::shared_ptr<TextureImage> sandsoil(new TextureImage(
                 "tile_sandsoil", TextureWrapMode::WRepeat));
@@ -618,7 +613,7 @@ int main() {
         layer2->uvscale = { 4.0, 0.0, 0.0 };
         layer3->uvscale = layer4->uvscale = { 2.0, 0.0, 0.0 };
 
-        auto chunk0 = terrain->chunkAt(2, 1);
+        auto chunk0 = terrain->chunkAt(4, 4);
         chunk0->appendLayer(layer1);
         chunk0->appendLayer(layer2);
         chunk0->appendLayer(layer3);
